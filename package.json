@@ -1,0 +1,25 @@
+{
+  "name": "bdfutbol-node-scraper",
+  "version": "1.0.0",
+  "description": "A NodeJS scraper for BDFutbol.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuisGilGB/bdfutbol-node-scraper.git"
+  },
+  "keywords": [
+    "bdfutbol",
+    "node",
+    "nodejs",
+    "scraper"
+  ],
+  "author": "Luis Gil Gutiérrez de la Barreda",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LuisGilGB/bdfutbol-node-scraper/issues"
+  },
+  "homepage": "https://github.com/LuisGilGB/bdfutbol-node-scraper#readme"
+}
