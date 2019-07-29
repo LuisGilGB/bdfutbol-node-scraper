@@ -28,7 +28,7 @@ const bdFutbolClubsScraper = page => {
         .then(clubPages => {
             const clubPlayers = clubPages.map(cP => rosterScraper(cP));
             const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], [])
-                                    .filter((p, i, a) => a.indexOf(p) === i);
+                                    .filter((p, i, a) => a.findIndex(up => up.bdFutbolId === p.bdFutbolId) === i);
 
             console.log('We got all the players!!!');
 
