@@ -1,4 +1,6 @@
 const rp = require('request-promise');
+const fs = require('fs');
+const path = require('path');
 const jsdom = require('jsdom');
 
 const {JSDOM} = jsdom;
@@ -33,7 +35,11 @@ const bdFutbolClubsScraper = page => {
 
 const scraper = () => {
     rp(url).then(html => {
-        console.log(bdFutbolClubsScraper(html));
+        const scrapedData = bdFutbolClubsScraper(html);
+        console.log(scrapedData);
+        fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData), err => {
+            console.log(err || 'Scraped data was succesfully writen to clubs.json in the output folder!!');
+        })
     }).catch(err => console.log(err));
 }
 
