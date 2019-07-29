@@ -1,20 +1,24 @@
 const rp = require('request-promise');
-const parser = require('html-dom-parser');
 const $ = require('cheerio');
+const jsdom = require('jsdom');
+const axios = require('axios');
+
+const {JSDOM} = jsdom;
+
 const url = 'https://www.bdfutbol.com/es/t/t2018-19.html';
 
 const bdFutbolClubsScraper = page => {
-    console.log(page)
-    const rawRows = page.querySelectorAll('#classific tr');
+    const pageDom = new JSDOM(page);
+    const rawRows = pageDom.window.document.querySelectorAll('#classific tr');
     const rows = [...rawRows];
 
     const isClubRow = r => r.childNodes.length > 1 && r.childNodes[0].nodeName !== 'TH';
     const getIdFromHref = href => href.split('/').reverse()[0].split('.')[0].slice(8);
-    const getAlias = r => r.querySelector('.aligesq a').innerText;
+    const getAlias = r => r.querySelector('.aligesq a').innerHTML;
     const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
     const getPicUrl = r => r.querySelector('img').src.replace('/em/', '/eg/');
 
-    rows.filter(isClubRow)[0] && fetch(rows.filter(isClubRow)[0].querySelector('.aligesq a').href)
+    rows.filter(isClubRow)[0] && axios.get(rows.filter(isClubRow)[0].querySelector('.aligesq a').href)
         .then(response => response.text().then(t => console.log(t)));
 
     return rows.filter(isClubRow)
@@ -27,7 +31,7 @@ const bdFutbolClubsScraper = page => {
 
 const scraper = () => {
     rp(url).then(html => {
-        console.log(bdFutbolClubsScraper(parser(html)));
+        console.log(bdFutbolClubsScraper(html));
     }).catch(err => console.log(err));
 }
 
