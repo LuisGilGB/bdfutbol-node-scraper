@@ -22,8 +22,20 @@ const bdFutbolClubsScraper = page => {
     const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', baseUrl);
     const getRosterUrl = r => r.querySelector('.aligesq a').href.replace('../', `${baseUrl}${esSubpath}`);
 
-    rows.filter(isClubRow)[0] && rp(getRosterUrl(rows.filter(isClubRow)[0]))
-        .then(response => rosterScraper(response))
+    const clubs = rows.filter(isClubRow);
+
+    Promise.all(clubs.map(c => rp(getRosterUrl(c))))
+        .then(clubPages => {
+            const clubPlayers = clubPages.map(cP => rosterScraper(cP));
+            const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], [])
+                                    .filter((p, i, a) => a.indexOf(p) === i);
+
+            console.log('We got all the players!!!');
+
+            fs.writeFile(path.join(__dirname, '../output/players.json'), JSON.stringify(players, null, '  '), err => {
+                console.log(err || 'Scraped data was successfully written to players.json in the output folder!!');
+            });
+        })
         .catch(err => console.log(err));
 
     return rows.filter(isClubRow)
@@ -37,8 +49,8 @@ const bdFutbolClubsScraper = page => {
 const scraper = () => {
     rp(url).then(html => {
         const scrapedData = bdFutbolClubsScraper(html);
-        console.log(scrapedData);
-        fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData), err => {
+        console.log('The classification page was successfully scraped');
+        fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
             console.log(err || 'Scraped data was succesfully written to clubs.json in the output folder!!');
         })
     }).catch(err => console.log(err));

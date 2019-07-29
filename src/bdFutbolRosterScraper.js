@@ -42,10 +42,11 @@ const bdFutbolRosterScraper = page => {
 
 const scraper = page => {
     const scrapedData = bdFutbolRosterScraper(page);
-    console.log(scrapedData);
-    fs.writeFile(path.join(__dirname, '../output/players.json'), JSON.stringify(scrapedData), err => {
-        console.log(err || 'Scraped data was succesfully written to players.json in the output folder!!');
-    });
+    console.log('Roster page was scraped successfully.');
+    //fs.writeFile(path.join(__dirname, '../output/players.json'), JSON.stringify(scrapedData), err => {
+    //    console.log(err || 'Scraped data was successfully written to players.json in the output folder!!');
+    //});
+    return scrapedData;
 }
 
 module.exports = scraper;
