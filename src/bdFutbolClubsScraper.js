@@ -19,10 +19,11 @@ const bdFutbolClubsScraper = page => {
     const getAlias = r => r.querySelector('.aligesq a').innerHTML;
     const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
     const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', baseUrl);
+    const getRosterUrl = r => r.querySelector('.aligesq a').href.replace('../', `${baseUrl}${esSubpath}`);
 
-    rows.filter(isClubRow)[0] && axios.get(rows.filter(isClubRow)[0].querySelector('.aligesq a').href)
-        .then(response => response.text().then(t => console.log(t)))
-        .catch(err => console.log('Cascó'));
+    rows.filter(isClubRow)[0] && axios.get(getRosterUrl(rows.filter(isClubRow)[0]))
+        .then(response => console.log(new JSDOM(response).window.document))
+        .catch(err => console.log(err));
 
     return rows.filter(isClubRow)
                .map(r => ({
