@@ -12,6 +12,8 @@ const POS_MAP = {
     dac: 'delantero'
 }
 
+const MIN_GAMES = 3;
+
 const playerDorsalColIndex = 0;
 const playerPicColIndex = 1;
 const playerGamesPlayedColIndex = 7;
@@ -20,6 +22,7 @@ module.exports = {
     baseUrl,
     esSubpath,
     POS_MAP,
+    MIN_GAMES,
     playerDorsalColIndex,
     playerPicColIndex,
     playerGamesPlayedColIndex

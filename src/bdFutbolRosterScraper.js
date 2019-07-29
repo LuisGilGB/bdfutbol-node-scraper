@@ -31,8 +31,8 @@ const bdFutbolRosterScraper = (page, playerRowCustomFilter) => {
                 }));
 }
 
-const scraper = page => {
-    const scrapedData = bdFutbolRosterScraper(page);
+const scraper = (page, playerRowCustomFilter) => {
+    const scrapedData = bdFutbolRosterScraper(page, playerRowCustomFilter);
     console.log('Roster page was scraped successfully.');
     //fs.writeFile(path.join(__dirname, '../output/players.json'), JSON.stringify(scrapedData), err => {
     //    console.log(err || 'Scraped data was successfully written to players.json in the output folder!!');

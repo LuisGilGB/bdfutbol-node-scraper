@@ -5,11 +5,25 @@ const jsdom = require('jsdom');
 const rosterScraper = require('./bdFutbolRosterScraper.js');
 const consts = require('./consts.js');
 
-const {baseUrl, esSubpath} = consts;
+const {
+    baseUrl,
+    esSubpath,
+    MIN_GAMES,
+    playerDorsalColIndex,
+    playerGamesPlayedColIndex
+} = consts;
 
 const {JSDOM} = jsdom;
 
 const url = 'https://www.bdfutbol.com/es/t/t2018-19.html';
+
+const returnEmptyIfInvalid = t => t && t !== String.fromCharCode(160) ? t : '';
+
+const getDorsal = r => returnEmptyIfInvalid(r.childNodes[playerDorsalColIndex].textContent);
+
+const getGames = r => r.childNodes[playerGamesPlayedColIndex].childNodes[0].textContent;
+
+const filterIrrelevantPlayers = r => !((r.querySelector('.filial') || !getDorsal(r)) && +(getGames(r)) < MIN_GAMES);
 
 const bdFutbolClubsScraper = page => {
     const pageDom = new JSDOM(page);
@@ -27,7 +41,7 @@ const bdFutbolClubsScraper = page => {
 
     Promise.all(clubs.map(c => rp(getRosterUrl(c))))
         .then(clubPages => {
-            const clubPlayers = clubPages.map(cP => rosterScraper(cP));
+            const clubPlayers = clubPages.map(cP => rosterScraper(cP, filterIrrelevantPlayers));
             const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], [])
                                     .filter((p, i, a) => a.findIndex(up => up.bdFutbolId === p.bdFutbolId) === i);
 
