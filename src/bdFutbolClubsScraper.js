@@ -1,7 +1,5 @@
 const rp = require('request-promise');
-const $ = require('cheerio');
 const jsdom = require('jsdom');
-const axios = require('axios');
 
 const {JSDOM} = jsdom;
 
@@ -21,7 +19,7 @@ const bdFutbolClubsScraper = page => {
     const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', baseUrl);
     const getRosterUrl = r => r.querySelector('.aligesq a').href.replace('../', `${baseUrl}${esSubpath}`);
 
-    rows.filter(isClubRow)[0] && axios.get(getRosterUrl(rows.filter(isClubRow)[0]))
+    rows.filter(isClubRow)[0] && rp(getRosterUrl(rows.filter(isClubRow)[0]))
         .then(response => console.log(new JSDOM(response).window.document))
         .catch(err => console.log(err));
 
