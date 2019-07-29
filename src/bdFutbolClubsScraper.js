@@ -2,6 +2,7 @@ const rp = require('request-promise');
 const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
+const rosterScraper = require('./bdFutbolRosterScraper.js');
 
 const {JSDOM} = jsdom;
 
@@ -16,13 +17,13 @@ const bdFutbolClubsScraper = page => {
 
     const isClubRow = r => r.childNodes.length > 1 && r.childNodes[0].nodeName !== 'TH';
     const getIdFromHref = href => href.split('/').reverse()[0].split('.')[0].slice(8);
-    const getAlias = r => r.querySelector('.aligesq a').innerHTML;
+    const getAlias = r => r.querySelector('.aligesq a').textContent;
     const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
     const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', baseUrl);
     const getRosterUrl = r => r.querySelector('.aligesq a').href.replace('../', `${baseUrl}${esSubpath}`);
 
     rows.filter(isClubRow)[0] && rp(getRosterUrl(rows.filter(isClubRow)[0]))
-        .then(response => console.log(new JSDOM(response).window.document))
+        .then(response => rosterScraper(response))
         .catch(err => console.log(err));
 
     return rows.filter(isClubRow)
@@ -38,7 +39,7 @@ const scraper = () => {
         const scrapedData = bdFutbolClubsScraper(html);
         console.log(scrapedData);
         fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData), err => {
-            console.log(err || 'Scraped data was succesfully writen to clubs.json in the output folder!!');
+            console.log(err || 'Scraped data was succesfully written to clubs.json in the output folder!!');
         })
     }).catch(err => console.log(err));
 }
