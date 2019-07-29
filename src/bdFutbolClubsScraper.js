@@ -3,11 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const rosterScraper = require('./bdFutbolRosterScraper.js');
+const consts = require('./consts.js');
+
+const {baseUrl, esSubpath} = consts;
 
 const {JSDOM} = jsdom;
 
-const baseUrl = 'https://www.bdfutbol.com/';
-const esSubpath = 'es/';
 const url = 'https://www.bdfutbol.com/es/t/t2018-19.html';
 
 const bdFutbolClubsScraper = page => {

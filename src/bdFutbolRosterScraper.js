@@ -1,23 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
+const consts = require('./consts.js');
+
+const {baseUrl, esSubpath, POS_MAP} = consts;
 
 const {JSDOM} = jsdom;
-const baseUrl = 'https://www.bdfutbol.com/';
-const esSubpath = 'es/';
 
-const POS_MAP = {
-    por: 'portero',
-    def: 'defensa',
-    ltd: 'defensa',
-    lti: 'defensa',
-    cen: 'defensa',
-    mig: 'centrocampista',
-    dav: 'delantero',
-    dac: 'delantero'
-}
-
-const bdFutbolRosterScraper = page => {
+const bdFutbolRosterScraper = (page, playerRowCustomFilter) => {
     const pageEl = new JSDOM(page).window.document;
     const rawRows = pageEl.querySelectorAll('#taulaplantilla tr');
     const rows = [...rawRows];
@@ -31,7 +21,8 @@ const bdFutbolRosterScraper = page => {
     const getPosition = r => POS_MAP[Object.keys(POS_MAP).find(k => r.querySelector(`.${k}`))];
 
     return rows.filter(r => isPlayerRow(r))
-               .map(r => ({
+                .filter((r,i,a) => playerRowCustomFilter ? playerRowCustomFilter(r,i,a) : true)
+                .map(r => ({
                     position: getPosition(r),
                     alias: getAlias(r),
                     completeName: getCompleteName(r),
