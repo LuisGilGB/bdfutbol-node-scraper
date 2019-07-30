@@ -1,4 +1,5 @@
 const fs = require('fs');
+const collectPage = require('./src/bdFutbolPagesCollector.js')
 
 const htmlSavesDir = './htmlSaves';
 const clubsDir = '/clubs';
@@ -34,5 +35,7 @@ if (fs.existsSync(htmlSavesDir)) {
     createChildDir(seasonsDir);
     console.log("HTML saves directoty successfully created with all its children directories.");
 }
+
+collectPage('https://www.bdfutbol.com/es/t/t2018-19.html', `${htmlSavesDir}${seasonsDir}/t2018-19.html`);
 
 console.log('Done');
