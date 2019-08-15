@@ -21,6 +21,10 @@ const POS_MAP = {
 
 const MIN_GAMES = 3;
 
+const CLASSIFICATION_COLUMNS = {
+    CLUB_NAME_COL: 2
+}
+
 const playerDorsalColIndex = 0;
 const playerPicColIndex = 1;
 const playerGamesPlayedColIndex = 7;
@@ -35,6 +39,7 @@ module.exports = {
     LAST_STARTING_YEAR,
     POS_MAP,
     MIN_GAMES,
+    CLASSIFICATION_COLUMNS,
     playerDorsalColIndex,
     playerPicColIndex,
     playerGamesPlayedColIndex
