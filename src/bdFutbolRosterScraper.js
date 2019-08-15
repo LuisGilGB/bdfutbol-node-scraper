@@ -3,24 +3,40 @@ const path = require('path');
 const jsdom = require('jsdom');
 const consts = require('./consts.js');
 
-const {baseUrl, esSubpath, POS_MAP} = consts;
+const {
+    BASE_URL,
+    ES_SUBPATH,
+    ROSTER_TABLE_ID,
+    POS_MAP,
+    ROSTER_COLUMNS
+} = consts;
+
+const {
+    PLAYER_DORSAL_COL,
+    PLAYER_PIC_COL,
+    PLAYER_FLAG_COL,
+    PLAYER_NAME_COL,
+    PLAYER_POSITION,
+    PLAYER_AGE,
+    PLAYER_GAMES_PLAYED
+} = ROSTER_COLUMNS;
 
 const {JSDOM} = jsdom;
 
 const bdFutbolRosterScraper = (page, playerRowCustomFilter) => {
     const pageEl = new JSDOM(page).window.document;
-    const rawRows = pageEl.querySelectorAll('#taulaplantilla tr');
+    const rawRows = pageEl.querySelectorAll(`#${ROSTER_TABLE_ID} tr`);
     const rows = [...rawRows];
 
-    const isPlayerRow = r => r.childNodes.length > 1 && r.childNodes[0].nodeName !== 'TH';
+    const isPlayerRow = (r, i) => (i > 0 && i < 12) || i > 14;
     const getIdFromHref = href => href.split('/').reverse()[0].split('.')[0];
-    const getAlias = r => r.querySelector('.aligesq a').textContent;
-    const getCompleteName = r => r.querySelector('.aligesq.colnom a').textContent;
-    const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
-    const getPicUrl = r => r.querySelector('img').src.replace('/m/', '/j/').replace('../../', baseUrl);
+    const getAlias = r => r.querySelectorAll('td')[PLAYER_NAME_COL].childNodes[0].childNodes[0].textContent;
+    const getCompleteName = r => r.querySelectorAll('td')[PLAYER_NAME_COL].childNodes[0].childNodes[1].textContent;
+    const getBdFutbolId = r => getIdFromHref(r.querySelectorAll('td')[PLAYER_NAME_COL].childNodes[0].href);
+    const getPicUrl = r => r.querySelector('img').src.replace('/m/', '/j/').replace('../../', BASE_URL);
     const getPosition = r => POS_MAP[Object.keys(POS_MAP).find(k => r.querySelector(`.${k}`))];
 
-    return rows.filter(r => isPlayerRow(r))
+    return rows.filter(isPlayerRow)
                 .filter((r,i,a) => playerRowCustomFilter ? playerRowCustomFilter(r,i,a) : true)
                 .map(r => ({
                     position: getPosition(r),

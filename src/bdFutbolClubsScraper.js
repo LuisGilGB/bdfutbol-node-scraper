@@ -6,12 +6,22 @@ const rosterScraper = require('./bdFutbolRosterScraper.js');
 const consts = require('./consts.js');
 
 const {
-    baseUrl,
-    esSubpath,
+    BASE_URL,
+    ES_SUBPATH,
     MIN_GAMES,
-    playerDorsalColIndex,
-    playerGamesPlayedColIndex
+    CLASSIFICATION_COLUMNS,
+    ROSTER_COLUMNS
 } = consts;
+
+const {
+    CLUB_CREST_COL,
+    CLUB_NAME_COL
+} = CLASSIFICATION_COLUMNS;
+
+const {
+    PLAYER_DORSAL_COL,
+    PLAYER_GAMES_PLAYED
+} = ROSTER_COLUMNS;
 
 const {JSDOM} = jsdom;
 
@@ -19,9 +29,9 @@ const url = 'https://www.bdfutbol.com/es/t/t2018-19.html';
 
 const returnEmptyIfInvalid = t => t && t !== String.fromCharCode(160) ? t : '';
 
-const getDorsal = r => returnEmptyIfInvalid(r.childNodes[playerDorsalColIndex].textContent);
+const getDorsal = r => returnEmptyIfInvalid(r.childNodes[PLAYER_DORSAL_COL].textContent);
 
-const getGames = r => r.childNodes[playerGamesPlayedColIndex].childNodes[0].textContent;
+const getGames = r => r.childNodes[PLAYER_GAMES_PLAYED].childNodes[0].textContent;
 
 const filterIrrelevantPlayers = r => !((r.querySelector('.filial') || !getDorsal(r)) && +(getGames(r)) < MIN_GAMES);
 
@@ -30,12 +40,12 @@ const bdFutbolClubsScraper = page => {
     const rawRows = pageDom.window.document.querySelectorAll('#classific tr');
     const rows = [...rawRows];
 
-    const isClubRow = r => r.childNodes.length > 1 && r.childNodes[0].nodeName !== 'TH';
+    const isClubRow = r => r.getAttribute('ideq');
     const getIdFromHref = href => href.split('/').reverse()[0].split('.')[0].slice(8);
-    const getAlias = r => r.querySelector('.aligesq a').textContent;
-    const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
-    const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', baseUrl);
-    const getRosterUrl = r => r.querySelector('.aligesq a').href.replace('../', `${baseUrl}${esSubpath}`);
+    const getAlias = r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].textContent;
+    const getBdFutbolId = r => getIdFromHref(r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href);
+    const getPicUrl = r => r.querySelectorAll('td')[CLUB_CREST_COL].querySelector('img').src.replace('/em/', '/eg/').replace('../../', BASE_URL);
+    const getRosterUrl = r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`);
 
     const clubs = rows.filter(isClubRow);
 
