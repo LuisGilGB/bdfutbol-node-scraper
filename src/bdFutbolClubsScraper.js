@@ -10,8 +10,7 @@ const {
     ES_SUBPATH,
     MIN_GAMES,
     CLASSIFICATION_COLUMNS,
-    playerDorsalColIndex,
-    playerGamesPlayedColIndex
+    ROSTER_COLUMNS
 } = consts;
 
 const {
@@ -19,15 +18,20 @@ const {
     CLUB_NAME_COL
 } = CLASSIFICATION_COLUMNS;
 
+const {
+    PLAYER_DORSAL_COL,
+    PLAYER_GAMES_PLAYED
+} = ROSTER_COLUMNS;
+
 const {JSDOM} = jsdom;
 
 const url = 'https://www.bdfutbol.com/es/t/t2018-19.html';
 
 const returnEmptyIfInvalid = t => t && t !== String.fromCharCode(160) ? t : '';
 
-const getDorsal = r => returnEmptyIfInvalid(r.childNodes[playerDorsalColIndex].textContent);
+const getDorsal = r => returnEmptyIfInvalid(r.childNodes[PLAYER_DORSAL_COL].textContent);
 
-const getGames = r => r.childNodes[playerGamesPlayedColIndex].childNodes[0].textContent;
+const getGames = r => r.childNodes[PLAYER_GAMES_PLAYED].childNodes[0].textContent;
 
 const filterIrrelevantPlayers = r => !((r.querySelector('.filial') || !getDorsal(r)) && +(getGames(r)) < MIN_GAMES);
 

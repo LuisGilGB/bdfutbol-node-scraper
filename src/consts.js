@@ -37,10 +37,6 @@ const ROSTER_COLUMNS = {
     PLAYER_GAMES_PLAYED: 6
 }
 
-const playerDorsalColIndex = 0;
-const playerPicColIndex = 1;
-const playerGamesPlayedColIndex = 7;
-
 module.exports = {
     BASE_URL,
     ES_SUBPATH,
