@@ -3,7 +3,7 @@ const path = require('path');
 const jsdom = require('jsdom');
 const consts = require('./consts.js');
 
-const {baseUrl, esSubpath, POS_MAP} = consts;
+const {BASE_URL, ES_SUBPATH, POS_MAP} = consts;
 
 const {JSDOM} = jsdom;
 
@@ -17,7 +17,7 @@ const bdFutbolRosterScraper = (page, playerRowCustomFilter) => {
     const getAlias = r => r.querySelector('.aligesq a').textContent;
     const getCompleteName = r => r.querySelector('.aligesq.colnom a').textContent;
     const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
-    const getPicUrl = r => r.querySelector('img').src.replace('/m/', '/j/').replace('../../', baseUrl);
+    const getPicUrl = r => r.querySelector('img').src.replace('/m/', '/j/').replace('../../', BASE_URL);
     const getPosition = r => POS_MAP[Object.keys(POS_MAP).find(k => r.querySelector(`.${k}`))];
 
     return rows.filter(r => isPlayerRow(r))

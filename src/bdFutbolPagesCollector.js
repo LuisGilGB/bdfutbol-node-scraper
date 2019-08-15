@@ -10,29 +10,44 @@ const {
     selectSubhtml
 } = utils;
 const {
-    baseUrl,
-    esSubpath
+    BASE_URL,
+    ES_SUBPATH,
+    SEASON_SUBPATH,
+    SEASON_PREFFIX,
+    SEASON_CLASSIFICATION_DIV_ID,
+    FIRST_STARTING_YEAR,
+    LAST_STARTING_YEAR
 } = consts;
 
 const collectPage = (url, destDir, selector) => rp(url)
-    .then(response => fs.writeFile(destDir, selectSubhtml(response, selector), () => {
+    .then(response => fs.writeFile(destDir, selectSubhtml(response, selector), (err) => {
+        if (err) throw err;
         console.log('Page successfully saved');
     }))
     .catch(err => console.log(err));
 
-const collectLeague = (url, destDir) => collectPage(url, destDir, '#classification');
+const collectLeague = (url, destDir) => collectPage(url, destDir, `#${SEASON_CLASSIFICATION_DIV_ID}`);
 const collectRoster = (url, destDir) => collectPage(url, destDir, '#taulaplantilla');
 
-const constrainYear = (year = 2018) => +(year < 1928 ? 1928 : year >= +(new Date().getFullYear()) ? 2018 : year);
+const constrainYear = (year = LAST_STARTING_YEAR) => +(year < FIRST_STARTING_YEAR ? FIRST_STARTING_YEAR : year >= +(new Date().getFullYear()) ? LAST_STARTING_YEAR : year);
 
 const getSeasonCode = (startingYear) => {
     const endingYear = +(startingYear) + 1;
     return `${startingYear}-${endingYear.toString().slice(-2)}`;
 }
 
-const collectSeason = (year = 2018) => {
+const getSeasonLink = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SUBPATH}${SEASON_PREFFIX}${seasonCode}.html`;
+
+const collectSeason = (year = LAST_STARTING_YEAR) => {
     const startingYear = constrainYear(year);
-    console.log(getSeasonCode(startingYear));
+    const seasonCode = getSeasonCode(startingYear);
+    console.log('Collecting data from season:', seasonCode);
+    const seasonLink = getSeasonLink(seasonCode)
+    console.log('Link:', seasonLink)
+    collectLeague(seasonLink, path.join(__dirname, `../htmlSaves/seasons/t${seasonCode}.html`));
+    // if (startingYear < LAST_STARTING_YEAR) {
+    //     collectSeason(startingYear + 1);
+    // }
 }
 
 const collectPages = () => {

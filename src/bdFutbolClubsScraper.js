@@ -6,8 +6,8 @@ const rosterScraper = require('./bdFutbolRosterScraper.js');
 const consts = require('./consts.js');
 
 const {
-    baseUrl,
-    esSubpath,
+    BASE_URL,
+    ES_SUBPATH,
     MIN_GAMES,
     playerDorsalColIndex,
     playerGamesPlayedColIndex
@@ -34,8 +34,8 @@ const bdFutbolClubsScraper = page => {
     const getIdFromHref = href => href.split('/').reverse()[0].split('.')[0].slice(8);
     const getAlias = r => r.querySelector('.aligesq a').textContent;
     const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
-    const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', baseUrl);
-    const getRosterUrl = r => r.querySelector('.aligesq a').href.replace('../', `${baseUrl}${esSubpath}`);
+    const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', BASE_URL);
+    const getRosterUrl = r => r.querySelector('.aligesq a').href.replace('../', `${BASE_URL}${ES_SUBPATH}`);
 
     const clubs = rows.filter(isClubRow);
 

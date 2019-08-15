@@ -1,5 +1,12 @@
-const baseUrl = 'https://www.bdfutbol.com/';
-const esSubpath = 'es/';
+const BASE_URL = 'https://www.bdfutbol.com/';
+const ES_SUBPATH = 'es/';
+const SEASON_SUBPATH = 't/';
+const SEASON_PREFFIX = 't';
+
+const SEASON_CLASSIFICATION_DIV_ID = 'divclassificacio';
+
+const FIRST_STARTING_YEAR = 1928;
+const LAST_STARTING_YEAR = 2018;
 
 const POS_MAP = {
     por: 'portero',
@@ -19,8 +26,13 @@ const playerPicColIndex = 1;
 const playerGamesPlayedColIndex = 7;
 
 module.exports = {
-    baseUrl,
-    esSubpath,
+    BASE_URL,
+    ES_SUBPATH,
+    SEASON_SUBPATH,
+    SEASON_PREFFIX,
+    SEASON_CLASSIFICATION_DIV_ID,
+    FIRST_STARTING_YEAR,
+    LAST_STARTING_YEAR,
     POS_MAP,
     MIN_GAMES,
     playerDorsalColIndex,
