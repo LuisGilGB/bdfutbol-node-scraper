@@ -36,6 +36,4 @@ if (fs.existsSync(htmlSavesDir)) {
     console.log("HTML saves directoty successfully created with all its children directories.");
 }
 
-collectPages('https://www.bdfutbol.com/es/t/t2018-19.html', `${htmlSavesDir}${seasonsDir}/t2018-19.html`, '#classification');
-
-console.log('Done');
+collectPages(2016).then(msg => console.log(msg)).catch(err => console.log(err));

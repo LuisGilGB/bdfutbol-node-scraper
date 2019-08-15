@@ -50,15 +50,20 @@ const collectSeason = (year = LAST_STARTING_YEAR) => {
     return collectLeague(seasonLink, path.join(__dirname, `../htmlSaves/seasons/t${seasonCode}.html`));
 }
 
-const collectSeasonsSince = (year = LAST_STARTING_YEAR) => {
+const collectSeasonsSince = (year = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
     const startingYear = Math.max(+(year), FIRST_STARTING_YEAR);
     collectSeason(startingYear)
-        .then(() => (startingYear < LAST_STARTING_YEAR) && collectSeasonsSince(startingYear + 1))
-        .catch(err => console.log(err));
-}
+        .then(() => {
+            if (startingYear < LAST_STARTING_YEAR) {
+                collectSeasonsSince(startingYear + 1);
+            } else {
+                console.log('All pages were successfully collected.');
+                resolve('Done');
+            }
+        })
+        .catch(err => reject(err));
+});
 
-const collectPages = () => {
-    collectSeasonsSince(1990);
-}
+const collectPages = (startingYear) => collectSeasonsSince(startingYear);
 
 module.exports = collectPages;
