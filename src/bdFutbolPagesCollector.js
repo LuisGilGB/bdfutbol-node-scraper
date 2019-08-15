@@ -14,7 +14,7 @@ const {
     ES_SUBPATH,
     SEASON_SUBPATH,
     SEASON_PREFFIX,
-    SEASON_CLASSIFICATION_DIV_ID,
+    SEASON_CLASSIFICATION_TABLE_ID,
     FIRST_STARTING_YEAR,
     LAST_STARTING_YEAR
 } = consts;
@@ -26,7 +26,7 @@ const collectPage = (url, destDir, selector) => rp(url)
     }))
     .catch(err => console.log(err));
 
-const collectLeague = (url, destDir) => collectPage(url, destDir, `#${SEASON_CLASSIFICATION_DIV_ID} table`);
+const collectLeague = (url, destDir) => collectPage(url, destDir, `#${SEASON_CLASSIFICATION_TABLE_ID}`);
 const collectRoster = (url, destDir) => collectPage(url, destDir, '#taulaplantilla');
 
 const constrainYear = (year = LAST_STARTING_YEAR) => +(year < FIRST_STARTING_YEAR ? FIRST_STARTING_YEAR : year >= +(new Date().getFullYear()) ? LAST_STARTING_YEAR : year);
