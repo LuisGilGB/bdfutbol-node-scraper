@@ -19,12 +19,15 @@ const {
     LAST_STARTING_YEAR
 } = consts;
 
-const collectPage = (url, destDir, selector) => rp(url)
-    .then(response => fs.writeFile(destDir, selectSubhtml(response, selector), (err) => {
-        if (err) throw err;
-        console.log('Page successfully saved');
-    }))
-    .catch(err => console.log(err));
+const collectPage = (url, destDir, selector) => new Promise((resolve, reject) => {
+    rp(url)
+        .then(response => fs.writeFile(destDir, selectSubhtml(response, selector), (err) => {
+            err && reject(err);
+            console.log('Page successfully saved');
+            resolve();
+        }))
+        .catch(err => reject(err));
+});
 
 const collectLeague = (url, destDir) => collectPage(url, destDir, `#${SEASON_CLASSIFICATION_TABLE_ID}`);
 const collectRoster = (url, destDir) => collectPage(url, destDir, '#taulaplantilla');
@@ -44,21 +47,18 @@ const collectSeason = (year = LAST_STARTING_YEAR) => {
     console.log('Collecting data from season:', seasonCode);
     const seasonLink = getSeasonLink(seasonCode)
     console.log('Link:', seasonLink)
-    collectLeague(seasonLink, path.join(__dirname, `../htmlSaves/seasons/t${seasonCode}.html`));
-    // if (startingYear < LAST_STARTING_YEAR) {
-    //     collectSeason(startingYear + 1);
-    // }
+    return collectLeague(seasonLink, path.join(__dirname, `../htmlSaves/seasons/t${seasonCode}.html`));
+}
+
+const collectSeasonsSince = (year = LAST_STARTING_YEAR) => {
+    const startingYear = Math.max(+(year), FIRST_STARTING_YEAR);
+    collectSeason(startingYear)
+        .then(() => (startingYear < LAST_STARTING_YEAR) && collectSeasonsSince(startingYear + 1))
+        .catch(err => console.log(err));
 }
 
 const collectPages = () => {
-    collectSeason(1901);
-    collectSeason(1928);
-    collectSeason('1964');
-    collectSeason(1990);
-    collectSeason(2006);
-    collectSeason(2018);
-    collectSeason(2019);
-    collectSeason('2032');
+    collectSeasonsSince(1990);
 }
 
 module.exports = collectPages;
