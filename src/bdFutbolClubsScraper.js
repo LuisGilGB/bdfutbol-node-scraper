@@ -40,10 +40,10 @@ const bdFutbolClubsScraper = page => {
     const getAlias = r => r.querySelector('.aligesq a').textContent;
     const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
     const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', BASE_URL);
-    const getRosterUrl = r => r.querySelector('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`);
-console.log('Rows count', rows.length);
+    const getRosterUrl = r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`);
+
     const clubs = rows.filter(isClubRow);
-console.log('Clubs count:', clubs.length)
+
     Promise.all(clubs.map(c => rp(getRosterUrl(c))))
         .then(clubPages => {
             const clubPlayers = clubPages.map(cP => rosterScraper(cP, filterIrrelevantPlayers));
