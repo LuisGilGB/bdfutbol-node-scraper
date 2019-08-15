@@ -22,6 +22,7 @@ const POS_MAP = {
 const MIN_GAMES = 3;
 
 const CLASSIFICATION_COLUMNS = {
+    CLUB_CREST_COL: 1,
     CLUB_NAME_COL: 2
 }
 

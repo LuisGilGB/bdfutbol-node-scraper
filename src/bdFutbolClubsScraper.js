@@ -15,6 +15,7 @@ const {
 } = consts;
 
 const {
+    CLUB_CREST_COL,
     CLUB_NAME_COL
 } = CLASSIFICATION_COLUMNS;
 
@@ -37,9 +38,9 @@ const bdFutbolClubsScraper = page => {
 
     const isClubRow = r => r.getAttribute('ideq');
     const getIdFromHref = href => href.split('/').reverse()[0].split('.')[0].slice(8);
-    const getAlias = r => r.querySelector('.aligesq a').textContent;
-    const getBdFutbolId = r => getIdFromHref(r.querySelector('.aligesq a').href);
-    const getPicUrl = r => r.querySelectorAll('td')[2].querySelector('img').src.replace('/em/', '/eg/').replace('../../', BASE_URL);
+    const getAlias = r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].textContent;
+    const getBdFutbolId = r => getIdFromHref(r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href);
+    const getPicUrl = r => r.querySelectorAll('td')[CLUB_CREST_COL].querySelector('img').src.replace('/em/', '/eg/').replace('../../', BASE_URL);
     const getRosterUrl = r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`);
 
     const clubs = rows.filter(isClubRow);
