@@ -7,7 +7,9 @@ const SEASON_CLASSIFICATION_TABLE_ID = 'classific';
 const ROSTER_TABLE_ID = 'taulaplantilla';
 
 const FIRST_STARTING_YEAR = 1928;
-const LAST_STARTING_YEAR = 2018;
+const LAST_STARTING_YEAR = 2019;
+
+const INVALID_STARTING_YEARS = [1936, 1937, 1938];
 
 const POS_MAP = {
     por: 'portero',
@@ -46,6 +48,7 @@ module.exports = {
     ROSTER_TABLE_ID,
     FIRST_STARTING_YEAR,
     LAST_STARTING_YEAR,
+    INVALID_STARTING_YEARS,
     POS_MAP,
     MIN_GAMES,
     CLASSIFICATION_COLUMNS,

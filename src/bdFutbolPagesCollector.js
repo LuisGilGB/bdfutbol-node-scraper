@@ -16,7 +16,8 @@ const {
     SEASON_PREFFIX,
     SEASON_CLASSIFICATION_TABLE_ID,
     FIRST_STARTING_YEAR,
-    LAST_STARTING_YEAR
+    LAST_STARTING_YEAR,
+    INVALID_STARTING_YEARS
 } = consts;
 
 const collectPage = (url, destDir, selector) => new Promise((resolve, reject) => {
@@ -41,6 +42,8 @@ const getSeasonCode = (startingYear) => {
 
 const getSeasonLink = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SUBPATH}${SEASON_PREFFIX}${seasonCode}.html`;
 
+const getNextValidStartingYear = (year) => INVALID_STARTING_YEARS.includes(year + 1) ? getNextValidStartingYear(year + 1) : year + 1;
+
 const collectSeason = (year = LAST_STARTING_YEAR) => {
     const startingYear = constrainYear(year);
     const seasonCode = getSeasonCode(startingYear);
@@ -54,8 +57,9 @@ const collectSeasonsSince = (year = LAST_STARTING_YEAR) => new Promise((resolve,
     const startingYear = Math.max(+(year), FIRST_STARTING_YEAR);
     collectSeason(startingYear)
         .then(() => {
-            if (startingYear < LAST_STARTING_YEAR) {
-                collectSeasonsSince(startingYear + 1);
+            const nextStartingYear = getNextValidStartingYear(startingYear);
+            if (nextStartingYear <= LAST_STARTING_YEAR) {
+                collectSeasonsSince(nextStartingYear);
             } else {
                 console.log('All pages were successfully collected.');
                 resolve('Done');
