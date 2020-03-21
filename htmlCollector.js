@@ -36,4 +36,4 @@ if (fs.existsSync(htmlSavesDir)) {
     console.log("HTML saves directoty successfully created with all its children directories.");
 }
 
-collectPages(1920).then(msg => console.log(msg)).catch(err => console.log(err));
+collectPages(2019).then(msg => console.log(msg)).catch(err => console.log(err));

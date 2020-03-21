@@ -17,8 +17,13 @@ const {
     SEASON_CLASSIFICATION_TABLE_ID,
     FIRST_STARTING_YEAR,
     LAST_STARTING_YEAR,
-    INVALID_STARTING_YEARS
+    INVALID_STARTING_YEARS,
+    CLASSIFICATION_COLUMNS
 } = consts;
+
+const {
+    CLUB_NAME_COL
+} = CLASSIFICATION_COLUMNS;
 
 const collectPage = (url, destDir, selector) => new Promise((resolve, reject) => {
     rp(url)
@@ -49,8 +54,16 @@ const collectSeason = (year = LAST_STARTING_YEAR) => {
     const seasonCode = getSeasonCode(startingYear);
     console.log('Collecting data from season:', seasonCode);
     const seasonLink = getSeasonLink(seasonCode)
-    console.log('Link:', seasonLink)
-    return collectLeague(seasonLink, path.join(__dirname, `../htmlSaves/seasons/t${seasonCode}.html`));
+    console.log('Link:', seasonLink);
+    const destDir = path.join(__dirname,`../htmlSaves/seasons/t${seasonCode}.html`);
+    collectLeague(seasonLink, destDir).then(() => {
+        console.log(`Read collected table form season ${seasonCode}`)
+        const seasonTable = new JSDOM(fs.readFileSync(destDir, 'utf8'));
+        const clubUrls = [...(seasonTable.window.document.querySelectorAll('tr'))]
+            .filter(r => !!r.getAttribute('ideq'))
+            .map(r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`));
+        console.log(clubUrls);
+    }).catch(err => console.log(err))
 }
 
 const collectSeasonsSince = (year = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
