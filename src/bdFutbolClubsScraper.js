@@ -8,6 +8,7 @@ const consts = require('./consts.js');
 const {
     BASE_URL,
     ES_SUBPATH,
+    LAST_STARTING_YEAR,
     MIN_GAMES,
     CLASSIFICATION_COLUMNS,
     ROSTER_COLUMNS
@@ -23,9 +24,14 @@ const {
     PLAYER_GAMES_PLAYED
 } = ROSTER_COLUMNS;
 
-const {JSDOM} = jsdom;
+const {
+    constrainYear,
+    getSeasonCode,
+    getSeasonLocalPathFromCode,
+    getSeasonLinkFromCode
+} = require('./utils');
 
-const url = 'https://www.bdfutbol.com/es/t/t2018-19.html';
+const {JSDOM} = jsdom;
 
 const returnEmptyIfInvalid = t => t && t !== String.fromCharCode(160) ? t : '';
 
@@ -72,14 +78,34 @@ const bdFutbolClubsScraper = page => {
                }));
 }
 
-const scraper = () => {
-    rp(url).then(html => {
-        const scrapedData = bdFutbolClubsScraper(html);
-        console.log('The classification page was successfully scraped');
-        fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
-            console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
+const scraper = (inputYear = LAST_STARTING_YEAR) => {
+    const year = constrainYear(inputYear);
+    const seasonCode = getSeasonCode(year);
+    const localPath = getSeasonLocalPathFromCode(seasonCode);
+    if (fs.existsSync(localPath)) {
+        fs.readFile(localPath, 'utf8', (err, data) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log('Successfully read from local.');
+            const scrapedData = bdFutbolClubsScraper(data);
+            console.log('The classification page was successfully scraped');
+            fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
+                console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
+            })
         })
-    }).catch(err => console.log(err));
+    } else {
+        console.log('Data is not locally available, so it must be remotely fetched.');
+        const url = getSeasonLinkFromCode(seasonCode);
+        rp(url).then(html => {
+            const scrapedData = bdFutbolClubsScraper(html);
+            console.log('The classification page was successfully scraped');
+            fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
+                console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
+            })
+        }).catch(err => console.log(err));
+    }
 }
 
 module.exports = scraper;
