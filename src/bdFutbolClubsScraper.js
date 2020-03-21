@@ -48,6 +48,7 @@ const bdFutbolClubsScraper = page => {
     const getRosterUrl = r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`);
 
     const clubs = rows.filter(isClubRow);
+    console.log(`We have all the club HTML row elements (${clubs.length}).`);
 
     Promise.all(clubs.map(c => rp(getRosterUrl(c))))
         .then(clubPages => {
