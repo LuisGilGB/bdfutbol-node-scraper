@@ -26,23 +26,23 @@ const {
     CLUB_NAME_COL
 } = CLASSIFICATION_COLUMNS;
 
-const collectPage = (url, destDir, selector) => new Promise((resolve, reject) => {
+const collectPage = (url, destPath, selector) => new Promise((resolve, reject) => {
     rp(url)
         .then(response => {
-            console.log(`Ensuring ${chalk.yellow(destDir)} exists.`);
-            fs.ensureFileSync(destDir);
-            console.log(`Ready to write ${chalk.yellow(destDir)} file.`);
-            fs.writeFile(destDir, selectSubhtml(response, selector), (err) => {
+            console.log(`Ensuring ${chalk.yellow(destPath)} exists.`);
+            fs.ensureFileSync(destPath);
+            console.log(`Ready to write ${chalk.yellow(destPath)} file.`);
+            fs.writeFile(destPath, selectSubhtml(response, selector), (err) => {
                 err && reject(err);
-                console.log(`${chalk.green('[OK]')} -> ${chalk.green(destDir)} file successfully saved`);
+                console.log(`${chalk.green('[OK]')} -> ${chalk.green(destPath)} file successfully saved`);
                 resolve();
             });
         })
         .catch(err => reject(err));
 });
 
-const collectLeague = (url, destDir) => collectPage(url, destDir, `#${SEASON_CLASSIFICATION_TABLE_ID}`);
-const collectRoster = (url, destDir) => collectPage(url, destDir, '#taulaplantilla');
+const collectLeague = (url, destPath) => collectPage(url, destPath, `#${SEASON_CLASSIFICATION_TABLE_ID}`);
+const collectRoster = (url, destPath) => collectPage(url, destPath, '#taulaplantilla');
 
 const constrainYear = (year = LAST_STARTING_YEAR) => +(year < FIRST_STARTING_YEAR ? FIRST_STARTING_YEAR : year >= +(new Date().getFullYear()) ? LAST_STARTING_YEAR : year);
 
@@ -64,11 +64,11 @@ const collectPages = (firstSeasonStartingYear) => {
         console.log('Collecting data from season:', seasonCode);
         const seasonLink = getSeasonLink(seasonCode)
         console.log('Link:', seasonLink);
-        const destDir = path.join(__dirname,`../htmlSaves/s${seasonCode}/s${seasonCode}.html`);
+        const destPath = path.join(__dirname,`../htmlSaves/s${seasonCode}/s${seasonCode}.html`);
         return new Promise((resolve, reject) => {
-            collectLeague(seasonLink, destDir).then(() => {
+            collectLeague(seasonLink, destPath).then(() => {
                 console.log(`Read collected table form season ${seasonCode}`)
-                const seasonTable = new JSDOM(fs.readFileSync(destDir, 'utf8'));
+                const seasonTable = new JSDOM(fs.readFileSync(destPath, 'utf8'));
                 const rostersUrls = [...(seasonTable.window.document.querySelectorAll('tr'))]
                     .filter(r => !!r.getAttribute('ideq'))
                     .map(r => ({
@@ -85,12 +85,12 @@ const collectPages = (firstSeasonStartingYear) => {
     }
     
     const collectSeasonsSince = (year = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
-        const startingYear = Math.max(+(year), FIRST_STARTING_YEAR);
+        const startingYear = Math.min(Math.max(+(year), FIRST_STARTING_YEAR), LAST_STARTING_YEAR);
         collectSeason(startingYear)
             .then(() => {
-                console.log(chalk.cyan('--------------------------------------------------------------------'));
-                console.log(chalk.cyan(`---              Season ${+(startingYear) + 1} data succesfully saved              ---`));
-                console.log(chalk.cyan('--------------------------------------------------------------------'));
+                console.log(chalk.cyan('-------------------------------------------------------------------------'));
+                console.log(chalk.cyan(`---              Season ${startingYear}/${+(startingYear) + 1} data succesfully saved              ---`));
+                console.log(chalk.cyan('-------------------------------------------------------------------------'));
                 const nextStartingYear = getNextValidStartingYear(startingYear);
                 if (nextStartingYear <= LAST_STARTING_YEAR) {
                     collectSeasonsSince(nextStartingYear);
