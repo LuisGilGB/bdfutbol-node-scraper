@@ -66,5 +66,8 @@ typings/
 # next.js build output
 .next
 
+# VS Code config
+.vscode
+
 # package-lock.json
 package-lock.json

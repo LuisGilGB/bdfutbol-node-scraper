@@ -48,6 +48,7 @@ const bdFutbolClubsScraper = page => {
     const getRosterUrl = r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`);
 
     const clubs = rows.filter(isClubRow);
+    console.log(`We have all the club HTML row elements (${clubs.length}).`);
 
     Promise.all(clubs.map(c => rp(getRosterUrl(c))))
         .then(clubPages => {
@@ -76,7 +77,7 @@ const scraper = () => {
         const scrapedData = bdFutbolClubsScraper(html);
         console.log('The classification page was successfully scraped');
         fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
-            console.log(err || 'Scraped data was succesfully written to clubs.json in the output folder!!');
+            console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
         })
     }).catch(err => console.log(err));
 }
