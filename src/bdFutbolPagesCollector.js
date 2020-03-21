@@ -14,7 +14,7 @@ const {
     BASE_URL,
     ES_SUBPATH,
     SEASON_SUBPATH,
-    SEASON_PREFFIX,
+    SEASON_PREFIX,
     SEASON_CLASSIFICATION_TABLE_ID,
     FIRST_STARTING_YEAR,
     LAST_STARTING_YEAR,
@@ -51,7 +51,7 @@ const getSeasonCode = (startingYear) => {
     return `${startingYear}-${endingYear.toString().slice(-2)}`;
 }
 
-const getSeasonLink = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SUBPATH}${SEASON_PREFFIX}${seasonCode}.html`;
+const getSeasonLink = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SUBPATH}${SEASON_PREFIX}${seasonCode}.html`;
 
 const getNextValidStartingYear = (year) => INVALID_STARTING_YEARS.includes(year + 1) ? getNextValidStartingYear(year + 1) : year + 1;
 
@@ -88,9 +88,9 @@ const collectPages = (firstSeasonStartingYear) => {
         const startingYear = Math.min(Math.max(+(year), FIRST_STARTING_YEAR), LAST_STARTING_YEAR);
         collectSeason(startingYear)
             .then(() => {
-                console.log(chalk.cyan('-------------------------------------------------------------------------'));
-                console.log(chalk.cyan(`---              Season ${startingYear}/${+(startingYear) + 1} data succesfully saved              ---`));
-                console.log(chalk.cyan('-------------------------------------------------------------------------'));
+                console.log(chalk.cyan('--------------------------------------------------------------------------'));
+                console.log(chalk.cyan(`---              Season ${startingYear}/${+(startingYear) + 1} data successfully saved              ---`));
+                console.log(chalk.cyan('--------------------------------------------------------------------------'));
                 const nextStartingYear = getNextValidStartingYear(startingYear);
                 if (nextStartingYear <= LAST_STARTING_YEAR) {
                     collectSeasonsSince(nextStartingYear);

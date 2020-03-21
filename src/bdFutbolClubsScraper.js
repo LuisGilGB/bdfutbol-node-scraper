@@ -77,7 +77,7 @@ const scraper = () => {
         const scrapedData = bdFutbolClubsScraper(html);
         console.log('The classification page was successfully scraped');
         fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
-            console.log(err || 'Scraped data was succesfully written to clubs.json in the output folder!!');
+            console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
         })
     }).catch(err => console.log(err));
 }
