@@ -1,7 +1,8 @@
 const rp = require('request-promise');
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const jsdom = require('jsdom');
+const chalk = require('chalk');
 const utils = require('./utils.js');
 const consts = require('./consts.js');
 
@@ -27,11 +28,16 @@ const {
 
 const collectPage = (url, destDir, selector) => new Promise((resolve, reject) => {
     rp(url)
-        .then(response => fs.writeFile(destDir, selectSubhtml(response, selector), (err) => {
-            err && reject(err);
-            console.log('Page successfully saved');
-            resolve();
-        }))
+        .then(response => {
+            console.log(`Ensuring ${chalk.yellow(destDir)} exists.`);
+            fs.ensureFileSync(destDir);
+            console.log(`Ready to write ${chalk.yellow(destDir)} file.`);
+            fs.writeFile(destDir, selectSubhtml(response, selector), (err) => {
+                err && reject(err);
+                console.log(`${chalk.green('[OK]')} -> ${chalk.green(destDir)} file successfully saved`);
+                resolve();
+            });
+        })
         .catch(err => reject(err));
 });
 
@@ -49,6 +55,8 @@ const getSeasonLink = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SUBPATH}${
 
 const getNextValidStartingYear = (year) => INVALID_STARTING_YEARS.includes(year + 1) ? getNextValidStartingYear(year + 1) : year + 1;
 
+const getIdFromHref = href => href.split('/').reverse()[0].split('.')[0].slice(8);
+
 const collectPages = (firstSeasonStartingYear) => {
     const collectSeason = (year = LAST_STARTING_YEAR) => {
         const startingYear = constrainYear(year);
@@ -56,17 +64,20 @@ const collectPages = (firstSeasonStartingYear) => {
         console.log('Collecting data from season:', seasonCode);
         const seasonLink = getSeasonLink(seasonCode)
         console.log('Link:', seasonLink);
-        const destDir = path.join(__dirname,`../htmlSaves/seasons/t${seasonCode}.html`);
+        const destDir = path.join(__dirname,`../htmlSaves/s${seasonCode}/s${seasonCode}.html`);
         return new Promise((resolve, reject) => {
             collectLeague(seasonLink, destDir).then(() => {
                 console.log(`Read collected table form season ${seasonCode}`)
                 const seasonTable = new JSDOM(fs.readFileSync(destDir, 'utf8'));
                 const rostersUrls = [...(seasonTable.window.document.querySelectorAll('tr'))]
                     .filter(r => !!r.getAttribute('ideq'))
-                    .map(r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`));
-                Promise.all(rostersUrls.map(url => rp(url)))
+                    .map(r => ({
+                        clubId: getIdFromHref(r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href),
+                        url: r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`)
+                    }));
+                Promise.all(rostersUrls.map(({clubId, url}) => collectRoster(url, path.join(__dirname,`../htmlSaves/s${seasonCode}/clubs/c${clubId}.html`))))
                     .then(rosterPages => {
-                        console.log('Rosters pages read');
+                        console.log('Rosters pages read and saved');
                         resolve()
                     }).catch(err => reject(err));
             }).catch(err => reject(err));
@@ -77,7 +88,9 @@ const collectPages = (firstSeasonStartingYear) => {
         const startingYear = Math.max(+(year), FIRST_STARTING_YEAR);
         collectSeason(startingYear)
             .then(() => {
-                collectRoster
+                console.log(chalk.cyan('--------------------------------------------------------------------'));
+                console.log(chalk.cyan(`---              Season ${+(startingYear) + 1} data succesfully saved              ---`));
+                console.log(chalk.cyan('--------------------------------------------------------------------'));
                 const nextStartingYear = getNextValidStartingYear(startingYear);
                 if (nextStartingYear <= LAST_STARTING_YEAR) {
                     collectSeasonsSince(nextStartingYear);

@@ -22,18 +22,18 @@ const checkAndCreateChildDir = (dir = '/dir', dirLogAlias = 'Dir') => {
     }
 }
 
-if (fs.existsSync(htmlSavesDir)) {
-    logDirExists('HTML saves');
-    checkAndCreateChildDir(clubsDir, 'Clubs');
-    checkAndCreateChildDir(playersDir, 'Players');
-    checkAndCreateChildDir(seasonsDir, 'Seasons');
-} else {
-    logDirDoesNotExist('HTML saves');
-    fs.mkdirSync(htmlSavesDir);
-    createChildDir(clubsDir);
-    createChildDir(playersDir);
-    createChildDir(seasonsDir);
-    console.log("HTML saves directoty successfully created with all its children directories.");
-}
+// if (fs.existsSync(htmlSavesDir)) {
+//     logDirExists('HTML saves');
+//     checkAndCreateChildDir(clubsDir, 'Clubs');
+//     checkAndCreateChildDir(playersDir, 'Players');
+//     checkAndCreateChildDir(seasonsDir, 'Seasons');
+// } else {
+//     logDirDoesNotExist('HTML saves');
+//     fs.mkdirSync(htmlSavesDir);
+//     createChildDir(clubsDir);
+//     createChildDir(playersDir);
+//     createChildDir(seasonsDir);
+//     console.log("HTML saves directoty successfully created with all its children directories.");
+// }
 
-collectPages(2017).then(msg => console.log(msg)).catch(err => console.log(err));
+collectPages(2018).then(msg => console.log(msg)).catch(err => console.log(err));
