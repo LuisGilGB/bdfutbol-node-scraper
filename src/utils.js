@@ -1,3 +1,4 @@
+const fs = require('fs-extra');
 const path = require('path');
 const jsdom = require('jsdom');
 const {JSDOM} = jsdom;
@@ -15,6 +16,14 @@ const {
 const getDom = html => new JSDOM(html).window.document;
 
 const selectSubhtml = (html, selector) => getDom(html).querySelector(selector).outerHTML;
+
+const readFilePromise = (path, encoding = 'utf8') => new Promise((resolve, reject) => fs.readFile(path, encoding, (err, data) => {
+    if (err) {
+        reject(err);
+    } else {
+        resolve(data);
+    }
+}));
 
 const getCurrentYear = () => new Date().getFullYear();
 
@@ -39,6 +48,7 @@ const getSeasonLinkFromCode = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SU
 module.exports = {
     getDom,
     selectSubhtml,
+    readFilePromise,
     getCurrentYear,
     constrainYear,
     getEndingYear,

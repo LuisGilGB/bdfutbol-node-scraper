@@ -1,9 +1,16 @@
 const rp = require('request-promise');
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const jsdom = require('jsdom');
 const rosterScraper = require('./bdFutbolRosterScraper.js');
 const consts = require('./consts.js');
+const {
+    readFilePromise,
+    constrainYear,
+    getSeasonCode,
+    getSeasonLocalPathFromCode,
+    getSeasonLinkFromCode
+} = require('./utils');
 
 const {
     BASE_URL,
@@ -23,13 +30,6 @@ const {
     PLAYER_DORSAL_COL,
     PLAYER_GAMES_PLAYED
 } = ROSTER_COLUMNS;
-
-const {
-    constrainYear,
-    getSeasonCode,
-    getSeasonLocalPathFromCode,
-    getSeasonLinkFromCode
-} = require('./utils');
 
 const {JSDOM} = jsdom;
 
@@ -83,27 +83,23 @@ const scraper = (inputYear = LAST_STARTING_YEAR) => {
     const seasonCode = getSeasonCode(year);
     const localPath = getSeasonLocalPathFromCode(seasonCode);
     if (fs.existsSync(localPath)) {
-        fs.readFile(localPath, 'utf8', (err, data) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            console.log('Successfully read from local.');
+        readFilePromise(localPath).then(data => {
+            console.log('Successfully read from a local file.');
             const scrapedData = bdFutbolClubsScraper(data);
-            console.log('The classification page was successfully scraped');
+            console.log('The classification page was successfully scraped.');
             fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
                 console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
-            })
-        })
+            });
+        });
     } else {
         console.log('Data is not locally available, so it must be remotely fetched.');
         const url = getSeasonLinkFromCode(seasonCode);
         rp(url).then(html => {
             const scrapedData = bdFutbolClubsScraper(html);
-            console.log('The classification page was successfully scraped');
+            console.log('The classification page was successfully scraped.');
             fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
                 console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
-            })
+            });
         }).catch(err => console.log(err));
     }
 }
