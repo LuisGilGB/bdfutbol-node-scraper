@@ -45,6 +45,8 @@ const getSeasonLocalPathFromYear = startingYear => getSeasonCodeAndApply(startin
 
 const getSeasonLinkFromCode = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SUBPATH}${SEASON_PREFIX}${seasonCode}.html`;
 
+const getSeasonClubRosterLocalPath = (seasonCode, clubId) => path.join(__dirname,`../htmlSaves/s${seasonCode}/clubs/c${clubId}.html`);
+
 module.exports = {
     getDom,
     selectSubhtml,
@@ -56,5 +58,6 @@ module.exports = {
     getSeasonCode,
     getSeasonLocalPathFromCode,
     getSeasonLocalPathFromYear,
-    getSeasonLinkFromCode
+    getSeasonLinkFromCode,
+    getSeasonClubRosterLocalPath
 }

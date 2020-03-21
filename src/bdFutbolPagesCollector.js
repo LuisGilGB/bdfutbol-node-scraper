@@ -14,7 +14,8 @@ const {
     getNextValidStartingYear,
     getSeasonCode,
     getSeasonLocalPathFromCode,
-    getSeasonLinkFromCode
+    getSeasonLinkFromCode,
+    getSeasonClubRosterLocalPath
 } = utils;
 const {
     BASE_URL,
@@ -66,7 +67,7 @@ const collectPages = (firstSeasonStartingYear) => {
                         clubId: getIdFromHref(r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href),
                         url: r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`)
                     }));
-                Promise.all(rostersUrls.map(({clubId, url}) => collectRoster(url, path.join(__dirname,`../htmlSaves/s${seasonCode}/clubs/c${clubId}.html`))))
+                Promise.all(rostersUrls.map(({clubId, url}) => collectRoster(url, getSeasonClubRosterLocalPath(seasonCode, clubId))))
                     .then(rosterPages => {
                         console.log('Rosters pages read and saved');
                         resolve()
