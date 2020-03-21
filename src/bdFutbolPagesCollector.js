@@ -49,38 +49,47 @@ const getSeasonLink = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SUBPATH}${
 
 const getNextValidStartingYear = (year) => INVALID_STARTING_YEARS.includes(year + 1) ? getNextValidStartingYear(year + 1) : year + 1;
 
-const collectSeason = (year = LAST_STARTING_YEAR) => {
-    const startingYear = constrainYear(year);
-    const seasonCode = getSeasonCode(startingYear);
-    console.log('Collecting data from season:', seasonCode);
-    const seasonLink = getSeasonLink(seasonCode)
-    console.log('Link:', seasonLink);
-    const destDir = path.join(__dirname,`../htmlSaves/seasons/t${seasonCode}.html`);
-    collectLeague(seasonLink, destDir).then(() => {
-        console.log(`Read collected table form season ${seasonCode}`)
-        const seasonTable = new JSDOM(fs.readFileSync(destDir, 'utf8'));
-        const clubUrls = [...(seasonTable.window.document.querySelectorAll('tr'))]
-            .filter(r => !!r.getAttribute('ideq'))
-            .map(r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`));
-        console.log(clubUrls);
-    }).catch(err => console.log(err))
+const collectPages = (firstSeasonStartingYear) => {
+    const collectSeason = (year = LAST_STARTING_YEAR) => {
+        const startingYear = constrainYear(year);
+        const seasonCode = getSeasonCode(startingYear);
+        console.log('Collecting data from season:', seasonCode);
+        const seasonLink = getSeasonLink(seasonCode)
+        console.log('Link:', seasonLink);
+        const destDir = path.join(__dirname,`../htmlSaves/seasons/t${seasonCode}.html`);
+        return new Promise((resolve, reject) => {
+            collectLeague(seasonLink, destDir).then(() => {
+                console.log(`Read collected table form season ${seasonCode}`)
+                const seasonTable = new JSDOM(fs.readFileSync(destDir, 'utf8'));
+                const rostersUrls = [...(seasonTable.window.document.querySelectorAll('tr'))]
+                    .filter(r => !!r.getAttribute('ideq'))
+                    .map(r => r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`));
+                Promise.all(rostersUrls.map(url => rp(url)))
+                    .then(rosterPages => {
+                        console.log('Rosters pages read');
+                        resolve()
+                    }).catch(err => reject(err));
+            }).catch(err => reject(err));
+        });
+    }
+    
+    const collectSeasonsSince = (year = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
+        const startingYear = Math.max(+(year), FIRST_STARTING_YEAR);
+        collectSeason(startingYear)
+            .then(() => {
+                collectRoster
+                const nextStartingYear = getNextValidStartingYear(startingYear);
+                if (nextStartingYear <= LAST_STARTING_YEAR) {
+                    collectSeasonsSince(nextStartingYear);
+                } else {
+                    console.log('All pages were successfully collected.');
+                    resolve('Done');
+                }
+            })
+            .catch(err => reject(err));
+    });
+
+    return collectSeasonsSince(firstSeasonStartingYear);
 }
-
-const collectSeasonsSince = (year = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
-    const startingYear = Math.max(+(year), FIRST_STARTING_YEAR);
-    collectSeason(startingYear)
-        .then(() => {
-            const nextStartingYear = getNextValidStartingYear(startingYear);
-            if (nextStartingYear <= LAST_STARTING_YEAR) {
-                collectSeasonsSince(nextStartingYear);
-            } else {
-                console.log('All pages were successfully collected.');
-                resolve('Done');
-            }
-        })
-        .catch(err => reject(err));
-});
-
-const collectPages = (startingYear) => collectSeasonsSince(startingYear);
 
 module.exports = collectPages;
