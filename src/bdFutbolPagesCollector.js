@@ -55,7 +55,7 @@ const collectPages = (firstSeasonStartingYear) => {
                 const rostersUrls = [...(seasonTable.querySelectorAll('tr'))]
                     .filter(isClubRow)
                     .map(getClubDataFromRow);
-                Promise.all(rostersUrls.map(({clubId, rosterUrl}) => collectRoster(rosterUrl, getSeasonClubRosterLocalPath(seasonCode, clubId))))
+                Promise.all(rostersUrls.map(({bdFutbolId, rosterUrl}) => collectRoster(rosterUrl, getSeasonClubRosterLocalPath(seasonCode, bdFutbolId))))
                     .then(rosterPages => {
                         console.log('Rosters pages read and saved');
                         resolve();

@@ -1,13 +1,8 @@
 const {
     BASE_URL,
     ES_SUBPATH,
-    CLASSIFICATION_COLUMNS
+    CLASSIFICATION_COLUMNS: {CLUB_CREST_COL, CLUB_NAME_COL}
 } = require('./consts');
-
-const {
-    CLUB_CREST_COL,
-    CLUB_NAME_COL
-} = CLASSIFICATION_COLUMNS;
 
 const isClubRow = r => r.getAttribute('ideq');
 
