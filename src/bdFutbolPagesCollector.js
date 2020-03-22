@@ -8,17 +8,20 @@ const consts = require('./consts.js');
 
 const {JSDOM} = jsdom;
 const {
-    selectSubhtml
+    getDom,
+    selectSubhtml,
+    constrainYear,
+    getNextValidStartingYear,
+    getSeasonCode,
+    getSeasonLocalPathFromCode,
+    getSeasonLinkFromCode,
+    getSeasonClubRosterLocalPath
 } = utils;
 const {
     BASE_URL,
     ES_SUBPATH,
-    SEASON_SUBPATH,
-    SEASON_PREFIX,
     SEASON_CLASSIFICATION_TABLE_ID,
-    FIRST_STARTING_YEAR,
     LAST_STARTING_YEAR,
-    INVALID_STARTING_YEARS,
     CLASSIFICATION_COLUMNS
 } = consts;
 
@@ -44,17 +47,6 @@ const collectPage = (url, destPath, selector) => new Promise((resolve, reject) =
 const collectLeague = (url, destPath) => collectPage(url, destPath, `#${SEASON_CLASSIFICATION_TABLE_ID}`);
 const collectRoster = (url, destPath) => collectPage(url, destPath, '#taulaplantilla');
 
-const constrainYear = (year = LAST_STARTING_YEAR) => +(year < FIRST_STARTING_YEAR ? FIRST_STARTING_YEAR : year >= +(new Date().getFullYear()) ? LAST_STARTING_YEAR : year);
-
-const getSeasonCode = (startingYear) => {
-    const endingYear = +(startingYear) + 1;
-    return `${startingYear}-${endingYear.toString().slice(-2)}`;
-}
-
-const getSeasonLink = seasonCode => `${BASE_URL}${ES_SUBPATH}${SEASON_SUBPATH}${SEASON_PREFIX}${seasonCode}.html`;
-
-const getNextValidStartingYear = (year) => INVALID_STARTING_YEARS.includes(year + 1) ? getNextValidStartingYear(year + 1) : year + 1;
-
 const getIdFromHref = href => href.split('/').reverse()[0].split('.')[0].slice(8);
 
 const collectPages = (firstSeasonStartingYear) => {
@@ -62,20 +54,20 @@ const collectPages = (firstSeasonStartingYear) => {
         const startingYear = constrainYear(year);
         const seasonCode = getSeasonCode(startingYear);
         console.log('Collecting data from season:', seasonCode);
-        const seasonLink = getSeasonLink(seasonCode)
+        const seasonLink = getSeasonLinkFromCode(seasonCode)
         console.log('Link:', seasonLink);
-        const destPath = path.join(__dirname,`../htmlSaves/s${seasonCode}/s${seasonCode}.html`);
+        const destPath = getSeasonLocalPathFromCode(seasonCode);
         return new Promise((resolve, reject) => {
             collectLeague(seasonLink, destPath).then(() => {
                 console.log(`Read collected table form season ${seasonCode}`)
-                const seasonTable = new JSDOM(fs.readFileSync(destPath, 'utf8'));
-                const rostersUrls = [...(seasonTable.window.document.querySelectorAll('tr'))]
+                const seasonTable = getDom(fs.readFileSync(destPath, 'utf8'));
+                const rostersUrls = [...(seasonTable.querySelectorAll('tr'))]
                     .filter(r => !!r.getAttribute('ideq'))
                     .map(r => ({
                         clubId: getIdFromHref(r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href),
                         url: r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`)
                     }));
-                Promise.all(rostersUrls.map(({clubId, url}) => collectRoster(url, path.join(__dirname,`../htmlSaves/s${seasonCode}/clubs/c${clubId}.html`))))
+                Promise.all(rostersUrls.map(({clubId, url}) => collectRoster(url, getSeasonClubRosterLocalPath(seasonCode, clubId))))
                     .then(rosterPages => {
                         console.log('Rosters pages read and saved');
                         resolve()
@@ -85,7 +77,7 @@ const collectPages = (firstSeasonStartingYear) => {
     }
     
     const collectSeasonsSince = (year = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
-        const startingYear = Math.min(Math.max(+(year), FIRST_STARTING_YEAR), LAST_STARTING_YEAR);
+        const startingYear = constrainYear(year);
         collectSeason(startingYear)
             .then(() => {
                 console.log(chalk.cyan('--------------------------------------------------------------------------'));
