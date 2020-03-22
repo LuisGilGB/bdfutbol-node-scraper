@@ -70,7 +70,10 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
 
             console.log('We got all the players!!!');
 
-            fs.writeFile(PLAYERS_OUTPUT_FILE, JSON.stringify(players, null, '  '), err => {
+            const currentPlayersData = fs.pathExistsSync(PLAYERS_OUTPUT_FILE) ? fs.readJsonSync(PLAYERS_OUTPUT_FILE) : [];
+            const newPlayersData = [...currentPlayersData, ...players].filter((p,i,a) => a.findIndex(pl => pl.bdFutbolId === p.bdFutbolId) === i);
+
+            fs.writeFile(PLAYERS_OUTPUT_FILE, JSON.stringify(newPlayersData, null, '  '), err => {
                 if (err) {
                     console.log('Scraped data was successfully written to players.json in the output folder!!')
                     reject(err);
