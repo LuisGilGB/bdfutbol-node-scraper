@@ -33,7 +33,7 @@ const bdFutbolRosterScraper = (page, playerRowCustomFilter) => {
     const getAlias = r => r.querySelectorAll('td')[PLAYER_NAME_COL].childNodes[0].childNodes[0].childNodes[0].textContent;
     const getCompleteName = r => r.querySelectorAll('td')[PLAYER_NAME_COL].childNodes[0].childNodes[0].childNodes[1].textContent;
     const getBdFutbolId = r => getIdFromHref(r.querySelectorAll('td')[PLAYER_NAME_COL].childNodes[0].childNodes[0].href);
-    const getPicUrl = r => r.querySelector('img').src.replace('/m/', '/j/').replace('../../', BASE_URL);
+    const getPicUrl = r => r.querySelector('img').src.replace('/m/', '/j/').replace('../../', BASE_URL).replace('.png', '.jpg');
     const getPosition = r => POS_MAP[Object.keys(POS_MAP).find(k => r.querySelector(`.${k}`))];
 
     return rows.filter(isPlayerRow)
