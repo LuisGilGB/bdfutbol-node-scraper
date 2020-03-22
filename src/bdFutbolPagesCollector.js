@@ -1,12 +1,10 @@
 const rp = require('request-promise');
 const fs = require('fs-extra');
-const path = require('path');
-const jsdom = require('jsdom');
 const chalk = require('chalk');
-const utils = require('./utils.js');
-const consts = require('./consts.js');
-
-const {JSDOM} = jsdom;
+const {
+    SEASON_CLASSIFICATION_TABLE_ID,
+    LAST_STARTING_YEAR
+} = require('./consts.js');
 const {
     getDom,
     selectSubhtml,
@@ -16,18 +14,11 @@ const {
     getSeasonLocalPathFromCode,
     getSeasonLinkFromCode,
     getSeasonClubRosterLocalPath
-} = utils;
+} = require('./utils.js');
 const {
-    BASE_URL,
-    ES_SUBPATH,
-    SEASON_CLASSIFICATION_TABLE_ID,
-    LAST_STARTING_YEAR,
-    CLASSIFICATION_COLUMNS
-} = consts;
-
-const {
-    CLUB_NAME_COL
-} = CLASSIFICATION_COLUMNS;
+    isClubRow,
+    getClubDataFromRow
+} = require('./seasonTableUtils');
 
 const collectPage = (url, destPath, selector) => new Promise((resolve, reject) => {
     rp(url)
@@ -62,15 +53,12 @@ const collectPages = (firstSeasonStartingYear) => {
                 console.log(`Read collected table form season ${seasonCode}`)
                 const seasonTable = getDom(fs.readFileSync(destPath, 'utf8'));
                 const rostersUrls = [...(seasonTable.querySelectorAll('tr'))]
-                    .filter(r => !!r.getAttribute('ideq'))
-                    .map(r => ({
-                        clubId: getIdFromHref(r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href),
-                        url: r.querySelectorAll('td')[CLUB_NAME_COL].childNodes[0].href.replace('../', `${BASE_URL}${ES_SUBPATH}`)
-                    }));
-                Promise.all(rostersUrls.map(({clubId, url}) => collectRoster(url, getSeasonClubRosterLocalPath(seasonCode, clubId))))
+                    .filter(isClubRow)
+                    .map(getClubDataFromRow);
+                Promise.all(rostersUrls.map(({clubId, rosterUrl}) => collectRoster(rosterUrl, getSeasonClubRosterLocalPath(seasonCode, clubId))))
                     .then(rosterPages => {
                         console.log('Rosters pages read and saved');
-                        resolve()
+                        resolve();
                     }).catch(err => reject(err));
             }).catch(err => reject(err));
         });

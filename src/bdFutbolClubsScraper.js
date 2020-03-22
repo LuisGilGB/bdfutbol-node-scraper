@@ -14,25 +14,15 @@ const {
 } = require('./utils');
 const {
     isClubRow,
-    getBdFutbolId,
-    getRosterUrl,
     getClubDataFromRow,
     filterClubDataToSave
 } = require('./seasonTableUtils');
 
 const {
-    BASE_URL,
-    ES_SUBPATH,
     LAST_STARTING_YEAR,
     MIN_GAMES,
-    CLASSIFICATION_COLUMNS,
     ROSTER_COLUMNS
 } = consts;
-
-const {
-    CLUB_CREST_COL,
-    CLUB_NAME_COL
-} = CLASSIFICATION_COLUMNS;
 
 const {
     PLAYER_DORSAL_COL,
