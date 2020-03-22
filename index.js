@@ -15,4 +15,6 @@ console.log(chalk.green("Output directory successfully created."));
 
 const clubsScraper = require('./src/bdFutbolClubsScraper.js');
 
-clubsScraper();
+clubsScraper(2017)
+    .then(() => {console.log(chalk.green('DONE!!!'))})
+    .catch(err => {console.error(err)});

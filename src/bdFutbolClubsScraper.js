@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const rp = require('request-promise');
 const path = require('path');
+const chalk = require('chalk');
 const rosterScraper = require('./bdFutbolRosterScraper.js');
 const {
     LAST_STARTING_YEAR,
@@ -11,6 +12,7 @@ const {
     getDom,
     readFilePromise,
     constrainYear,
+    getNextValidStartingYear,
     getSeasonCode,
     getSeasonLocalPathFromCode,
     getSeasonLinkFromCode,
@@ -35,70 +37,108 @@ const getGames = r => r.childNodes[PLAYER_GAMES_PLAYED].childNodes[0].textConten
 
 const filterIrrelevantPlayers = r => !((r.querySelector('.filial') || !getDorsal(r)) && +(getGames(r)) < MIN_GAMES);
 
-const scraper = (inputYear = LAST_STARTING_YEAR) => {
+const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) => {
+    const pageDom = getDom(page);
+    const rawRows = pageDom.querySelectorAll('#classific tr');
+    const rows = [...rawRows];
+
+    const clubs = rows.filter(isClubRow).map(getClubDataFromRow);
+    console.log(`We have all the club HTML row elements (${clubs.length}).`);
+
+    const clubsPromises = clubs.map(c => {
+        const {bdFutbolId, rosterUrl} = c;
+        const clubLocalPath = getSeasonClubRosterLocalPath(seasonCode, bdFutbolId);
+        console.log(clubLocalPath)
+        console.log('Ensuring local file for roster data exists.');
+        if (fs.existsSync(clubLocalPath)) {
+            console.log('Local file exists.');
+            return readFilePromise(getSeasonClubRosterLocalPath(seasonCode, bdFutbolId));
+        } else {
+            console.log('The local file does not exist, so we fetch the data remotely.');
+            return rp(rosterUrl);
+        }
+    });
+
+    Promise.all(clubsPromises)
+        .then(clubPages => {
+            const clubPlayers = clubPages.map(cP => rosterScraper(cP, filterIrrelevantPlayers));
+            const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], [])
+                                    .filter((p, i, a) => a.findIndex(up => up.bdFutbolId === p.bdFutbolId) === i);
+
+            console.log('We got all the players!!!');
+
+            fs.writeFile(path.join(__dirname, '../output/players.json'), JSON.stringify(players, null, '  '), err => {
+                if (err) {
+                    console.log('Scraped data was successfully written to players.json in the output folder!!')
+                    reject(err);
+                } else {
+                    resolve(clubs.map(filterClubDataToSave));
+                }
+            });
+        })
+        .catch(err => console.log(err));
+});
+
+const scraper = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
     const year = constrainYear(inputYear);
     const seasonCode = getSeasonCode(year);
+    const bdFutbolClubsScraper = seasonClubsScraper(seasonCode);
     
-    const bdFutbolClubsScraper = page => {
-        const pageDom = getDom(page);
-        const rawRows = pageDom.querySelectorAll('#classific tr');
-        const rows = [...rawRows];
-
-        const clubs = rows.filter(isClubRow).map(getClubDataFromRow);
-        console.log(`We have all the club HTML row elements (${clubs.length}).`);
-
-        const clubsPromises = clubs.map(c => {
-            const {bdFutbolId, rosterUrl} = c;
-            const clubLocalPath = getSeasonClubRosterLocalPath(seasonCode, bdFutbolId);
-            console.log(clubLocalPath)
-            console.log('Ensuring local file for roster data exists.');
-            if (fs.existsSync(clubLocalPath)) {
-                console.log('Local file exists.');
-                return readFilePromise(getSeasonClubRosterLocalPath(seasonCode, bdFutbolId));
-            } else {
-                console.log('The local file does not exist, so we fetch the data remotely.');
-                return rp(rosterUrl);
-            }
-        });
-
-        Promise.all(clubsPromises)
-            .then(clubPages => {
-                const clubPlayers = clubPages.map(cP => rosterScraper(cP, filterIrrelevantPlayers));
-                const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], [])
-                                        .filter((p, i, a) => a.findIndex(up => up.bdFutbolId === p.bdFutbolId) === i);
-
-                console.log('We got all the players!!!');
-
-                fs.writeFile(path.join(__dirname, '../output/players.json'), JSON.stringify(players, null, '  '), err => {
-                    console.log(err || 'Scraped data was successfully written to players.json in the output folder!!');
-                });
-            })
-            .catch(err => console.log(err));
-
-        return clubs.map(filterClubDataToSave);
-    }
-
     const localPath = getSeasonLocalPathFromCode(seasonCode);
     if (fs.existsSync(localPath)) {
         readFilePromise(localPath).then(data => {
             console.log('Successfully read from a local file.');
-            const scrapedData = bdFutbolClubsScraper(data);
-            console.log('The classification page was successfully scraped.');
-            fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
-                console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
-            });
+            bdFutbolClubsScraper(data)
+                .then(scrapedData => {
+                    console.log('The classification page was successfully scraped.');
+                    fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
+                        if (err) {
+                            console.log('Scraped data was successfully written to clubs.json in the output folder!!');
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                })
+                .catch(err => {reject(err)});
         });
     } else {
         console.log('Data is not locally available, so it must be remotely fetched.');
         const url = getSeasonLinkFromCode(seasonCode);
         rp(url).then(html => {
-            const scrapedData = bdFutbolClubsScraper(html);
-            console.log('The classification page was successfully scraped.');
-            fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
-                console.log(err || 'Scraped data was successfully written to clubs.json in the output folder!!');
-            });
-        }).catch(err => console.log(err));
+            bdFutbolClubsScraper(html)
+                .then(scrapedData => {
+                    console.log('The classification page was successfully scraped.');
+                    fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
+                        if (err) {
+                            console.log('Scraped data was successfully written to clubs.json in the output folder!!');
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                })
+                .catch(err => {reject(err)});
+        }).catch(err => {reject(err)});
     }
-}
+});
 
-module.exports = scraper;
+const scrapeSince = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
+    const startingYear = constrainYear(inputYear);
+    scraper(startingYear)
+        .then(() => {
+            console.log(chalk.cyan('--------------------------------------------------------------------------'));
+            console.log(chalk.cyan(`---             Season ${startingYear}/${+(startingYear) + 1} data successfully scraped             ---`));
+            console.log(chalk.cyan('--------------------------------------------------------------------------'));
+            const nextStartingYear = getNextValidStartingYear(startingYear);
+            if (nextStartingYear <= LAST_STARTING_YEAR) {
+                scrapeSince(nextStartingYear);
+            } else {
+                console.log('All seasons were successfully scraped.');
+                resolve('Done');
+            }
+        })
+        .catch(err => {reject.log(err)});
+});
+
+module.exports = scrapeSince;
