@@ -35,6 +35,9 @@ const getDorsal = r => returnEmptyIfInvalid(r.childNodes[PLAYER_DORSAL_COL].text
 
 const getGames = r => r.childNodes[PLAYER_GAMES_PLAYED].childNodes[0].textContent;
 
+const CLUBS_OUTPUT_FILE = path.join(__dirname, '../output/clubs.json');
+const PLAYERS_OUTPUT_FILE = path.join(__dirname, '../output/players.json')
+
 const filterIrrelevantPlayers = r => !((r.querySelector('.filial') || !getDorsal(r)) && +(getGames(r)) < MIN_GAMES);
 
 const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) => {
@@ -67,7 +70,7 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
 
             console.log('We got all the players!!!');
 
-            fs.writeFile(path.join(__dirname, '../output/players.json'), JSON.stringify(players, null, '  '), err => {
+            fs.writeFile(PLAYERS_OUTPUT_FILE, JSON.stringify(players, null, '  '), err => {
                 if (err) {
                     console.log('Scraped data was successfully written to players.json in the output folder!!')
                     reject(err);
@@ -91,7 +94,11 @@ const scraper = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject
             bdFutbolClubsScraper(data)
                 .then(scrapedData => {
                     console.log('The classification page was successfully scraped.');
-                    fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
+
+                    const currentClubsData = fs.pathExistsSync(CLUBS_OUTPUT_FILE) ? fs.readJsonSync(CLUBS_OUTPUT_FILE) : [];
+                    const newClubsData = [...currentClubsData, ...scrapedData].filter((c,i,a) => a.findIndex(cl => cl.bdFutbolId === c.bdFutbolId) === i);
+
+                    fs.writeFile(CLUBS_OUTPUT_FILE, JSON.stringify(newClubsData, null, '  '), err => {
                         if (err) {
                             console.log('Scraped data was successfully written to clubs.json in the output folder!!');
                             reject(err);
@@ -138,7 +145,7 @@ const scrapeSince = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, re
                 resolve('Done');
             }
         })
-        .catch(err => {reject.log(err)});
+        .catch(err => {reject(err)});
 });
 
 module.exports = scrapeSince;
