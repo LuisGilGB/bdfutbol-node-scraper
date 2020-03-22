@@ -48,12 +48,13 @@ const scraper = (inputYear = LAST_STARTING_YEAR) => {
         console.log(`We have all the club HTML row elements (${clubs.length}).`);
 
         const clubsPromises = clubs.map(c => {
-            const {clubId, rosterUrl} = c;
-            const clubLocalPath = getSeasonClubRosterLocalPath(seasonCode, clubId);
+            const {bdFutbolId, rosterUrl} = c;
+            const clubLocalPath = getSeasonClubRosterLocalPath(seasonCode, bdFutbolId);
+            console.log(clubLocalPath)
             console.log('Ensuring local file for roster data exists.');
             if (fs.existsSync(clubLocalPath)) {
                 console.log('Local file exists.');
-                return readFilePromise(getSeasonClubRosterLocalPath(seasonCode, clubId));
+                return readFilePromise(getSeasonClubRosterLocalPath(seasonCode, bdFutbolId));
             } else {
                 console.log('The local file does not exist, so we fetch the data remotely.');
                 return rp(rosterUrl);
