@@ -1,14 +1,17 @@
 const fs = require('fs');
+const chalk = require('chalk');
 
 const outputDir = './output';
 
 if (fs.existsSync(outputDir)) {
-    console.log("Output dir already exists, so no need to create it.");
+    console.log(`${chalk.red("Output dir already exists")}, so let's remove it to clean any remaining and possibly outdated data.`);
+    fs.rmdirSync(outputDir, {recursive: true});
+    console.log(chalk.cyan("Old output directory has been successfully removed."));
 } else {
-    console.log("Output directory doesn't exist, so we create it now.");
-    fs.mkdirSync(outputDir);
-    console.log("Output directory successfully created.");
+    console.log(`${chalk.cyan("Output directory doesn't exist")}, so no need to remove it.`);
 }
+fs.mkdirSync(outputDir);
+console.log(chalk.green("Output directory successfully created."));
 
 const clubsScraper = require('./src/bdFutbolClubsScraper.js');
 
