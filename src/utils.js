@@ -1,8 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
 const jsdom = require('jsdom');
-const {JSDOM} = jsdom;
-
 const {
     BASE_URL,
     ES_SUBPATH,
@@ -12,6 +10,8 @@ const {
     LAST_STARTING_YEAR,
     INVALID_STARTING_YEARS
 } = require('./consts');
+
+const {JSDOM} = jsdom;
 
 const getDom = html => new JSDOM(html).window.document;
 
