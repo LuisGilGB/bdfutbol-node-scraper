@@ -1,10 +1,14 @@
 const fs = require('fs-extra');
 const rp = require('request-promise');
 const path = require('path');
-const jsdom = require('jsdom');
 const rosterScraper = require('./bdFutbolRosterScraper.js');
-const consts = require('./consts.js');
 const {
+    LAST_STARTING_YEAR,
+    MIN_GAMES,
+    ROSTER_COLUMNS
+} = require('./consts.js');;
+const {
+    getDom,
     readFilePromise,
     constrainYear,
     getSeasonCode,
@@ -19,17 +23,9 @@ const {
 } = require('./seasonTableUtils');
 
 const {
-    LAST_STARTING_YEAR,
-    MIN_GAMES,
-    ROSTER_COLUMNS
-} = consts;
-
-const {
     PLAYER_DORSAL_COL,
     PLAYER_GAMES_PLAYED
 } = ROSTER_COLUMNS;
-
-const {JSDOM} = jsdom;
 
 const returnEmptyIfInvalid = t => t && t !== String.fromCharCode(160) ? t : '';
 
@@ -44,8 +40,8 @@ const scraper = (inputYear = LAST_STARTING_YEAR) => {
     const seasonCode = getSeasonCode(year);
     
     const bdFutbolClubsScraper = page => {
-        const pageDom = new JSDOM(page);
-        const rawRows = pageDom.window.document.querySelectorAll('#classific tr');
+        const pageDom = getDom(page);
+        const rawRows = pageDom.querySelectorAll('#classific tr');
         const rows = [...rawRows];
 
         const clubs = rows.filter(isClubRow).map(getClubDataFromRow);
