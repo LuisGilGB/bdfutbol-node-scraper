@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require('fs');
 const chalk = require('chalk');
 const collectPages = require('./src/bdFutbolPagesCollector.js')

@@ -95,11 +95,11 @@ const scraper = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject
         readFilePromise(localPath).then(data => {
             console.log('Successfully read from a local file.');
             bdFutbolClubsScraper(data)
-                .then(scrapedData => {
+                .then(scrapedClubsData => {
                     console.log('The classification page was successfully scraped.');
 
                     const currentClubsData = fs.pathExistsSync(CLUBS_OUTPUT_FILE) ? fs.readJsonSync(CLUBS_OUTPUT_FILE) : [];
-                    const newClubsData = [...currentClubsData, ...scrapedData].filter((c,i,a) => a.findIndex(cl => cl.bdFutbolId === c.bdFutbolId) === i);
+                    const newClubsData = [...scrapedClubsData, ...currentClubsData].filter((c,i,a) => a.findIndex(cl => cl.bdFutbolId === c.bdFutbolId) === i);
 
                     fs.writeFile(CLUBS_OUTPUT_FILE, JSON.stringify(newClubsData, null, '  '), err => {
                         if (err) {
