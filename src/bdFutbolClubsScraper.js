@@ -36,7 +36,7 @@ const getDorsal = r => returnEmptyIfInvalid(r.childNodes[PLAYER_DORSAL_COL].text
 const getGames = r => r.childNodes[PLAYER_GAMES_PLAYED].childNodes[0].textContent;
 
 const CLUBS_OUTPUT_FILE = path.join(__dirname, '../output/clubs.json');
-const PLAYERS_OUTPUT_FILE = path.join(__dirname, '../output/players.json')
+const PLAYERS_OUTPUT_FILE = path.join(__dirname, '../output/players.json');
 
 const filterIrrelevantPlayers = r => !((r.querySelector('.filial') || !getDorsal(r)) && +(getGames(r)) < MIN_GAMES);
 

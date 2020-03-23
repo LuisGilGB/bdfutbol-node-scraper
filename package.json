@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "collectPages": "node htmlCollector.js",
+    "cookPlayers": "node spanishFootballBotCooker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
