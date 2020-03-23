@@ -85,31 +85,38 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
         .catch(err => console.log(err));
 });
 
-const scraper = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
+const writeClubsData = (newScrapedClubData) => new Promise((resolve, reject) => {
+    const currentClubsData = fs.pathExistsSync(CLUBS_OUTPUT_FILE) ? fs.readJsonSync(CLUBS_OUTPUT_FILE) : [];
+    const newClubsData = [...newScrapedClubData, ...currentClubsData].filter((c,i,a) => a.findIndex(cl => cl.bdFutbolId === c.bdFutbolId) === i);
+
+    fs.writeJSON(CLUBS_OUTPUT_FILE, newClubsData, {spaces: 2}, err => {
+        if (err) {
+            console.log('Scraped data was successfully written to clubs.json in the output folder!!');
+            reject(err);
+        } else {
+            resolve();
+        }
+    });
+});
+
+const scrapeSeason = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
     const year = constrainYear(inputYear);
     const seasonCode = getSeasonCode(year);
-    const bdFutbolClubsScraper = seasonClubsScraper(seasonCode);
-    
     const localPath = getSeasonLocalPathFromCode(seasonCode);
+    const bdFutbolClubsScraper = seasonClubsScraper(seasonCode);
+
+    const postSeasonScrapeRoutine = scrapedClubsData => {
+        console.log('The classification page was successfully scraped.');
+        writeClubsData(scrapedClubsData)
+            .then(res => resolve(res))
+            .catch(err => reject(err))
+    }
+
     if (fs.existsSync(localPath)) {
         readFilePromise(localPath).then(data => {
             console.log('Successfully read from a local file.');
             bdFutbolClubsScraper(data)
-                .then(scrapedClubsData => {
-                    console.log('The classification page was successfully scraped.');
-
-                    const currentClubsData = fs.pathExistsSync(CLUBS_OUTPUT_FILE) ? fs.readJsonSync(CLUBS_OUTPUT_FILE) : [];
-                    const newClubsData = [...scrapedClubsData, ...currentClubsData].filter((c,i,a) => a.findIndex(cl => cl.bdFutbolId === c.bdFutbolId) === i);
-
-                    fs.writeFile(CLUBS_OUTPUT_FILE, JSON.stringify(newClubsData, null, '  '), err => {
-                        if (err) {
-                            console.log('Scraped data was successfully written to clubs.json in the output folder!!');
-                            reject(err);
-                        } else {
-                            resolve();
-                        }
-                    });
-                })
+                .then(postSeasonScrapeRoutine)
                 .catch(err => {reject(err)});
         });
     } else {
@@ -117,38 +124,36 @@ const scraper = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject
         const url = getSeasonLinkFromCode(seasonCode);
         rp(url).then(html => {
             bdFutbolClubsScraper(html)
-                .then(scrapedData => {
-                    console.log('The classification page was successfully scraped.');
-                    fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
-                        if (err) {
-                            console.log('Scraped data was successfully written to clubs.json in the output folder!!');
-                            reject(err);
-                        } else {
-                            resolve();
-                        }
-                    });
-                })
+                .then(postSeasonScrapeRoutine)
                 .catch(err => {reject(err)});
         }).catch(err => {reject(err)});
     }
 });
 
-const scrapeSince = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
-    const startingYear = constrainYear(inputYear);
-    scraper(startingYear)
-        .then(() => {
-            console.log(chalk.cyan('--------------------------------------------------------------------------'));
-            console.log(chalk.cyan(`---             Season ${startingYear}/${+(startingYear) + 1} data successfully scraped             ---`));
-            console.log(chalk.cyan('--------------------------------------------------------------------------'));
-            const nextStartingYear = getNextValidStartingYear(startingYear);
-            if (nextStartingYear <= LAST_STARTING_YEAR) {
-                scrapeSince(nextStartingYear);
-            } else {
-                console.log('All seasons were successfully scraped.');
-                resolve('Done');
-            }
+const scrape = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
+    const firstYearToOperate = constrainYear(inputYear);
+    const scrapeSince = (startingYear) => new Promise((resolve, reject) => {
+        scrapeSeason(startingYear)
+            .then(() => {
+                console.log(chalk.cyan('--------------------------------------------------------------------------'));
+                console.log(chalk.cyan(`---             Season ${startingYear}/${+(startingYear) + 1} data successfully scraped             ---`));
+                console.log(chalk.cyan('--------------------------------------------------------------------------'));
+                const nextStartingYear = getNextValidStartingYear(startingYear);
+                if (nextStartingYear <= LAST_STARTING_YEAR) {
+                    scrapeSince(nextStartingYear);
+                } else {
+                    resolve();
+                }
+            })
+            .catch(err => {reject(err)});
+    });
+
+    scrapeSince(firstYearToOperate)
+        .then(res => {
+            console.log('All seasons were successfully scraped.');
+            resolve(res);
         })
-        .catch(err => {reject(err)});
+        .catch(err => reject(err));
 });
 
-module.exports = scrapeSince;
+module.exports = scrape;
