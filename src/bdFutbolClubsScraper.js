@@ -65,15 +65,36 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
     Promise.all(clubsPromises)
         .then(clubPages => {
             const clubPlayers = clubPages.map(cP => rosterScraper(cP, filterIrrelevantPlayers));
-            const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], [])
-                                    .filter((p, i, a) => a.findIndex(up => up.bdFutbolId === p.bdFutbolId) === i);
+            const currentPlayersData = fs.pathExistsSync(PLAYERS_OUTPUT_FILE) ? fs.readJsonSync(PLAYERS_OUTPUT_FILE) : [];
+            const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], []);
 
             console.log('We got all the players!!!');
 
-            const currentPlayersData = fs.pathExistsSync(PLAYERS_OUTPUT_FILE) ? fs.readJsonSync(PLAYERS_OUTPUT_FILE) : [];
-            const newPlayersData = [...currentPlayersData, ...players].filter((p,i,a) => a.findIndex(pl => pl.bdFutbolId === p.bdFutbolId) === i);
+            players.forEach((pl,i,a) => {
+                const {bdFutbolId: playerId} = pl;
+                const matchIndex = currentPlayersData.findIndex(({bdFutbolId}) => bdFutbolId === playerId);
+                if (matchIndex >= 0) {
+                    const oldPlayerData = currentPlayersData[matchIndex];
+                    const updatedPlayerData = {
+                        ...oldPlayerData,
+                        gamesPlayed: oldPlayerData.gamesPlayed + pl.gamesPlayed,
+                        gameStartings: oldPlayerData.gameStartings + pl.gameStartings,
+                        gamesCompleted: oldPlayerData.gamesCompleted + pl.gamesCompleted,
+                        yellowCards: oldPlayerData.yellowCards + pl.yellowCards,
+                        redCards: oldPlayerData.redCards + pl.redCards,
+                        goals: oldPlayerData.goals + pl.goals,
+                        seasons: [...oldPlayerData.seasons, seasonCode].filter((s,i,a) => a.indexOf(s) === i)
+                    }
+                    currentPlayersData[matchIndex] = updatedPlayerData;
+                } else {
+                    currentPlayersData.push({
+                        ...pl,
+                        seasons: [seasonCode]
+                    });
+                }
+            })
 
-            fs.writeFile(PLAYERS_OUTPUT_FILE, JSON.stringify(newPlayersData, null, '  '), err => {
+            fs.writeJson(PLAYERS_OUTPUT_FILE, currentPlayersData, {spaces: 2}, err => {
                 if (err) {
                     console.log('Scraped data was successfully written to players.json in the output folder!!')
                     reject(err);
@@ -85,31 +106,39 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
         .catch(err => console.log(err));
 });
 
-const scraper = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
+const writeClubsData = (newScrapedClubData) => new Promise((resolve, reject) => {
+    const currentClubsData = fs.pathExistsSync(CLUBS_OUTPUT_FILE) ? fs.readJsonSync(CLUBS_OUTPUT_FILE) : [];
+    // TODO: The complexity of this operation can be optimized for sure. Won't do it while it works, but consider doing it in future stages.
+    const newClubsData = [...newScrapedClubData, ...currentClubsData].filter((c,i,a) => a.findIndex(cl => cl.bdFutbolId === c.bdFutbolId) === i);
+
+    fs.writeJSON(CLUBS_OUTPUT_FILE, newClubsData, {spaces: 2}, err => {
+        if (err) {
+            console.log('Scraped data was successfully written to clubs.json in the output folder!!');
+            reject(err);
+        } else {
+            resolve();
+        }
+    });
+});
+
+const scrapeSeason = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
     const year = constrainYear(inputYear);
     const seasonCode = getSeasonCode(year);
-    const bdFutbolClubsScraper = seasonClubsScraper(seasonCode);
-    
     const localPath = getSeasonLocalPathFromCode(seasonCode);
+    const bdFutbolClubsScraper = seasonClubsScraper(seasonCode);
+
+    const postSeasonScrapeRoutine = scrapedClubsData => {
+        console.log('The classification page was successfully scraped.');
+        writeClubsData(scrapedClubsData)
+            .then(res => resolve(res))
+            .catch(err => reject(err))
+    }
+
     if (fs.existsSync(localPath)) {
         readFilePromise(localPath).then(data => {
             console.log('Successfully read from a local file.');
             bdFutbolClubsScraper(data)
-                .then(scrapedData => {
-                    console.log('The classification page was successfully scraped.');
-
-                    const currentClubsData = fs.pathExistsSync(CLUBS_OUTPUT_FILE) ? fs.readJsonSync(CLUBS_OUTPUT_FILE) : [];
-                    const newClubsData = [...currentClubsData, ...scrapedData].filter((c,i,a) => a.findIndex(cl => cl.bdFutbolId === c.bdFutbolId) === i);
-
-                    fs.writeFile(CLUBS_OUTPUT_FILE, JSON.stringify(newClubsData, null, '  '), err => {
-                        if (err) {
-                            console.log('Scraped data was successfully written to clubs.json in the output folder!!');
-                            reject(err);
-                        } else {
-                            resolve();
-                        }
-                    });
-                })
+                .then(postSeasonScrapeRoutine)
                 .catch(err => {reject(err)});
         });
     } else {
@@ -117,38 +146,36 @@ const scraper = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject
         const url = getSeasonLinkFromCode(seasonCode);
         rp(url).then(html => {
             bdFutbolClubsScraper(html)
-                .then(scrapedData => {
-                    console.log('The classification page was successfully scraped.');
-                    fs.writeFile(path.join(__dirname, '../output/clubs.json'), JSON.stringify(scrapedData, null, '  '), err => {
-                        if (err) {
-                            console.log('Scraped data was successfully written to clubs.json in the output folder!!');
-                            reject(err);
-                        } else {
-                            resolve();
-                        }
-                    });
-                })
+                .then(postSeasonScrapeRoutine)
                 .catch(err => {reject(err)});
         }).catch(err => {reject(err)});
     }
 });
 
-const scrapeSince = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
-    const startingYear = constrainYear(inputYear);
-    scraper(startingYear)
-        .then(() => {
-            console.log(chalk.cyan('--------------------------------------------------------------------------'));
-            console.log(chalk.cyan(`---             Season ${startingYear}/${+(startingYear) + 1} data successfully scraped             ---`));
-            console.log(chalk.cyan('--------------------------------------------------------------------------'));
-            const nextStartingYear = getNextValidStartingYear(startingYear);
-            if (nextStartingYear <= LAST_STARTING_YEAR) {
-                scrapeSince(nextStartingYear);
-            } else {
-                console.log('All seasons were successfully scraped.');
-                resolve('Done');
-            }
+const scrape = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, reject) => {
+    const firstYearToOperate = constrainYear(inputYear);
+    const scrapeSince = (startingYear) => new Promise((resolve, reject) => {
+        scrapeSeason(startingYear)
+            .then(() => {
+                console.log(chalk.cyan('--------------------------------------------------------------------------'));
+                console.log(chalk.cyan(`---             Season ${startingYear}/${+(startingYear) + 1} data successfully scraped             ---`));
+                console.log(chalk.cyan('--------------------------------------------------------------------------'));
+                const nextStartingYear = getNextValidStartingYear(startingYear);
+                if (nextStartingYear <= LAST_STARTING_YEAR) {
+                    scrapeSince(nextStartingYear);
+                } else {
+                    resolve();
+                }
+            })
+            .catch(err => {reject(err)});
+    });
+
+    scrapeSince(firstYearToOperate)
+        .then(res => {
+            console.log('All seasons were successfully scraped.');
+            resolve(res);
         })
-        .catch(err => {reject(err)});
+        .catch(err => reject(err));
 });
 
-module.exports = scrapeSince;
+module.exports = scrape;

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require('fs');
 const chalk = require('chalk');
 const collectPages = require('./src/bdFutbolPagesCollector.js')
@@ -14,4 +15,4 @@ if (fs.existsSync(htmlSavesDir)) {
 fs.mkdirSync(htmlSavesDir);
 console.log(chalk.green("HTML saves directory has been successfully created."));
 
-collectPages(2017).then(msg => console.log(msg)).catch(err => console.log(err));
+collectPages(1928).then(msg => console.log(msg)).catch(err => console.log(err));
