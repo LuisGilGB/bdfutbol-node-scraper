@@ -82,11 +82,15 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
                         gamesCompleted: oldPlayerData.gamesCompleted + pl.gamesCompleted,
                         yellowCards: oldPlayerData.yellowCards + pl.yellowCards,
                         redCards: oldPlayerData.redCards + pl.redCards,
-                        goals: oldPlayerData.goals + pl.goals
+                        goals: oldPlayerData.goals + pl.goals,
+                        seasons: [...oldPlayerData.seasons, seasonCode].filter((s,i,a) => a.indexOf(s) === i)
                     }
                     currentPlayersData[matchIndex] = updatedPlayerData;
                 } else {
-                    currentPlayersData.push(pl);
+                    currentPlayersData.push({
+                        ...pl,
+                        seasons: [seasonCode]
+                    });
                 }
             })
 
