@@ -4,6 +4,7 @@ const path = require('path');
 
 const PLAYERS_OUTPUT_FILE = path.join(__dirname, './output/players.json');
 const COOK_OUTPUT_FILE = path.join(__dirname, './spanishFootballBotCook/players.json');
+const COOK_SUMMARY_OUTPUT_FILE = path.join(__dirname, './spanishFootballBotCook/playersSummary.json');
 
 console.log("Read scraped players data.")
 
@@ -34,5 +35,6 @@ const cookedPlayers = players
                         .sort((a,b) => b.score - a.score);
 
 fs.writeJsonSync(COOK_OUTPUT_FILE, cookedPlayers, {spaces: 2});
+fs.writeJsonSync(COOK_SUMMARY_OUTPUT_FILE, cookedPlayers.map(pl => pl.alias), {spaces: 2});
 
 console.log('DONE!!!')
