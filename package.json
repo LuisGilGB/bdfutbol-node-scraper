@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/LuisGilGB/bdfutbol-node-scraper#readme",
   "dependencies": {
+    "@luisgilgb/js-utils": "^0.3.2",
     "chalk": "^3.0.0",
     "fs-extra": "^9.0.0",
     "jsdom": "^15.1.1",

@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const jsdom = require('jsdom');
+const {getLast} = require('@luisgilgb/js-utils');
 const {
     BASE_URL,
     ES_SUBPATH,
@@ -16,6 +17,10 @@ const {JSDOM} = jsdom;
 const getDom = html => new JSDOM(html).window.document;
 
 const selectSubhtml = (html, selector) => getDom(html).querySelector(selector).outerHTML;
+
+const getFromReverseIndex = (arr = [], rIndex) => getLast(rIndex > 0 ? arr.slice(0, -rIndex) : arr);
+
+const restrictBottomToZero = input => input > 0 ? +(input) : 0;
 
 const readFilePromise = (path, encoding = 'utf8') => new Promise((resolve, reject) => fs.readFile(path, encoding, (err, data) => {
     if (err) {
@@ -50,6 +55,8 @@ const getSeasonClubRosterLocalPath = (seasonCode, clubId) => path.join(__dirname
 module.exports = {
     getDom,
     selectSubhtml,
+    getFromReverseIndex,
+    restrictBottomToZero,
     readFilePromise,
     getCurrentYear,
     constrainYear,
