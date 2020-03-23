@@ -65,17 +65,26 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
     Promise.all(clubsPromises)
         .then(clubPages => {
             const clubPlayers = clubPages.map(cP => rosterScraper(cP, filterIrrelevantPlayers));
-            const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], [])
-                                    .filter((p, i, a) => a.findIndex(up => up.bdFutbolId === p.bdFutbolId) === i);
+            const currentPlayersData = fs.pathExistsSync(PLAYERS_OUTPUT_FILE) ? fs.readJsonSync(PLAYERS_OUTPUT_FILE) : [];
+            const players = clubPlayers.reduce((a0, pArr) => [...a0, ...pArr], []);
 
             console.log('We got all the players!!!');
 
-            const currentPlayersData = fs.pathExistsSync(PLAYERS_OUTPUT_FILE) ? fs.readJsonSync(PLAYERS_OUTPUT_FILE) : [];
             players.forEach((pl,i,a) => {
                 const {bdFutbolId: playerId} = pl;
-                const oldPlayerData = currentPlayersData.find(({bdFutbolId}) => bdFutbolId === playerId);
-                if (oldPlayerData) {
-                    return;
+                const matchIndex = currentPlayersData.findIndex(({bdFutbolId}) => bdFutbolId === playerId);
+                if (matchIndex >= 0) {
+                    const oldPlayerData = currentPlayersData[matchIndex];
+                    const updatedPlayerData = {
+                        ...oldPlayerData,
+                        gamesPlayed: oldPlayerData.gamesPlayed + pl.gamesPlayed,
+                        gameStartings: oldPlayerData.gameStartings + pl.gameStartings,
+                        gamesCompleted: oldPlayerData.gamesCompleted + pl.gamesCompleted,
+                        yellowCards: oldPlayerData.yellowCards + pl.yellowCards,
+                        redCards: oldPlayerData.redCards + pl.redCards,
+                        goals: oldPlayerData.goals + pl.goals
+                    }
+                    currentPlayersData[matchIndex] = updatedPlayerData;
                 } else {
                     currentPlayersData.push(pl);
                 }
