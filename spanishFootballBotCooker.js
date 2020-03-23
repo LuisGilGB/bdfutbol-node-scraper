@@ -29,7 +29,7 @@ const cookedPlayers = players
                         .filter(pl => pl.gamesPlayed > 0)
                         .map(pl => ({
                             ...pl,
-                            score: Math.round((Math.round(pl.gamesPlayed/50) + Math.round(pl.goals * getGoalsWeight(pl.position)/50) + (1 + pl.goals/pl.gamesPlayed)^(1 + pl.seasons.length/10)) * (pl.gameStartings * pl.gamesCompleted)/(pl.gamesPlayed^2) * 100)
+                            score: Math.round((Math.round(pl.gamesPlayed/50) + Math.round(pl.goals * getGoalsWeight(pl.position)/50) + Math.pow(1 + pl.goals/pl.gamesPlayed, 1 + pl.seasons.length/10)) * ((pl.gameStartings * pl.gamesCompleted)/Math.pow(pl.gamesPlayed, 2)) * 100)
                         }))
                         .sort((a,b) => b.score - a.score);
 
