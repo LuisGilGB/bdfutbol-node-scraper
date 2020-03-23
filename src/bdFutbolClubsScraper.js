@@ -71,9 +71,17 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
             console.log('We got all the players!!!');
 
             const currentPlayersData = fs.pathExistsSync(PLAYERS_OUTPUT_FILE) ? fs.readJsonSync(PLAYERS_OUTPUT_FILE) : [];
-            const newPlayersData = [...currentPlayersData, ...players].filter((p,i,a) => a.findIndex(pl => pl.bdFutbolId === p.bdFutbolId) === i);
+            players.forEach((pl,i,a) => {
+                const {bdFutbolId: playerId} = pl;
+                const oldPlayerData = currentPlayersData.find(({bdFutbolId}) => bdFutbolId === playerId);
+                if (oldPlayerData) {
+                    return;
+                } else {
+                    currentPlayersData.push(pl);
+                }
+            })
 
-            fs.writeFile(PLAYERS_OUTPUT_FILE, JSON.stringify(newPlayersData, null, '  '), err => {
+            fs.writeJson(PLAYERS_OUTPUT_FILE, currentPlayersData, {spaces: 2}, err => {
                 if (err) {
                     console.log('Scraped data was successfully written to players.json in the output folder!!')
                     reject(err);
@@ -87,6 +95,7 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
 
 const writeClubsData = (newScrapedClubData) => new Promise((resolve, reject) => {
     const currentClubsData = fs.pathExistsSync(CLUBS_OUTPUT_FILE) ? fs.readJsonSync(CLUBS_OUTPUT_FILE) : [];
+    // TODO: The complexity of this operation can be optimized for sure. Won't do it while it works, but consider doing it in future stages.
     const newClubsData = [...newScrapedClubData, ...currentClubsData].filter((c,i,a) => a.findIndex(cl => cl.bdFutbolId === c.bdFutbolId) === i);
 
     fs.writeJSON(CLUBS_OUTPUT_FILE, newClubsData, {spaces: 2}, err => {
