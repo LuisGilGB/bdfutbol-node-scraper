@@ -7,6 +7,7 @@ const {
         PLAYER_GAMES_PLAYED,
         PLAYER_GAME_STARTINGS,
         PLAYER_GAMES_COMPLETED,
+        PLAYER_MINUTES_REVERSE,
         PLAYER_YELLOW_CARDS_REVERSE,
         PLAYER_RED_CARDS_REVERSE,
         PLAYER_GOALS_REVERSE
@@ -27,6 +28,7 @@ const getPosition = r => POS_MAP[Object.keys(POS_MAP).find(k => r.querySelector(
 const getGamesPlayed = tds => +(tds[PLAYER_GAMES_PLAYED].childNodes[0].textContent);
 const getGameStartings = tds => +(tds[PLAYER_GAME_STARTINGS].childNodes[0].textContent);
 const getGamesCompleted = tds => +(tds[PLAYER_GAMES_COMPLETED].childNodes[0].textContent);
+const getMinutes = tds => getLastColsSelAndFormat(tds, PLAYER_MINUTES_REVERSE);
 const getYellowCards = tds => getLastColsSelAndFormat(tds, PLAYER_YELLOW_CARDS_REVERSE);
 const getRedCards = tds => getLastColsSelAndFormat(tds, PLAYER_RED_CARDS_REVERSE);
 const getGoals = tds => getLastColsSelAndFormat(tds, PLAYER_GOALS_REVERSE);
@@ -43,6 +45,7 @@ const getPlayerDataFromRow = r => {
         gamesPlayed: getGamesPlayed(tds),
         gameStartings: getGameStartings(tds),
         gamesCompleted: getGamesCompleted(tds),
+        minutes: getMinutes(tds),
         yellowCards: getYellowCards(tds),
         redCards: getRedCards(tds),
         goals: getGoals(tds),

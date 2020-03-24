@@ -81,6 +81,7 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
                         gamesPlayed: oldPlayerData.gamesPlayed + pl.gamesPlayed,
                         gameStartings: oldPlayerData.gameStartings + pl.gameStartings,
                         gamesCompleted: oldPlayerData.gamesCompleted + pl.gamesCompleted,
+                        minutes: oldPlayerData.minutes + pl.minutes,
                         yellowCards: oldPlayerData.yellowCards + pl.yellowCards,
                         redCards: oldPlayerData.redCards + pl.redCards,
                         goals: oldPlayerData.goals + pl.goals,
