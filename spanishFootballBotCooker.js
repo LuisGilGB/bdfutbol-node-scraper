@@ -32,13 +32,13 @@ const cookedPlayers = players
                         .filter(pl => pl.gamesPlayed > 0)
                         .map(pl => ({
                             ...pl,
-                            score: Math.round((Math.pow(pl.gamesPlayed/5, 1.5) + Math.pow(pl.goals * getGoalsWeight(pl.position)/2, 1.5) + Math.pow(1 + (10 * (pl.goals * Math.sqrt(getGoalsWeight(pl.position)))/pl.gamesPlayed), Math.round(2 + Math.log10(pl.gamesPlayed)))) * 1000 * (5 - Math.log(2040 - +(getLast(pl.seasons).split('-')[0]))))
+                            score: Math.round((Math.pow(pl.gamesPlayed/5, 1.5) + Math.pow(pl.goals * getGoalsWeight(pl.position)/2, 1.5) + Math.pow(1 + (10 * (pl.goals * Math.sqrt(getGoalsWeight(pl.position)))/pl.gamesPlayed), 2 + Math.log10(pl.gamesPlayed)) + (pl.concededGoals ? Math.pow(1 + Math.log((2500 - +(getLast(pl.seasons).split('-')[0]))/5) * pl.gamesPlayed/pl.concededGoals, 2 + Math.log10(pl.gamesPlayed)) : 0)) * 1000 * (5 - Math.log(2040 - +(getLast(pl.seasons).split('-')[0]))))
                         }))
                         .sort((a,b) => b.score - a.score);
 
 fs.writeJsonSync(COOK_OUTPUT_FILE, cookedPlayers, {spaces: 2});
 fs.writeJsonSync(COOK_SUMMARY_OUTPUT_FILE, cookedPlayers.map((pl, i) => ({
-    alis: pl.alias,
+    alias: pl.alias,
     lastSeason: +(getLast(pl.seasons).split('-')[0]),
     pos: i+1,
     score: pl.score
