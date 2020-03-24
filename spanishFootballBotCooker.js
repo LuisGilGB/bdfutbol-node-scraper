@@ -36,7 +36,7 @@ const cookedPlayers = players
                         .filter(pl => pl.gamesPlayed > 0)
                         .map(pl => ({
                             ...pl,
-                            score: Math.round((Math.pow(pl.minutes/300, 1.5) + Math.pow(pl.goals * getGoalsWeight(pl.position)/2, 1.5) + Math.pow(1 + (600 * (pl.goals * Math.sqrt(getGoalsWeight(pl.position)))/pl.minutes), 2 + Math.log10(pl.minutes/60)) + (pl.concededGoals ? Math.pow(1 + Math.log((2500 - +(getLast(pl.seasons).split('-')[0]))/5) * pl.minutes/(100 * pl.concededGoals), 2 + Math.log10(pl.minutes/100)) : 0)) * 1000 * (5 - Math.log(2040 - +(getLast(pl.seasons).split('-')[0]))))
+                            score: Math.round((Math.pow(pl.minutes/300, 1.5) + Math.pow(pl.goals * getGoalsWeight(pl.position)/2, 1.5) + Math.pow(1 + (600 * (pl.goals * Math.sqrt(getGoalsWeight(pl.position)))/pl.minutes), 2 + Math.log10(pl.minutes/60)) + (pl.concededGoals ? Math.pow(1 + Math.log((2500 - +(getLast(pl.seasons).split('-')[0]))/5) * pl.minutes/(100 * pl.concededGoals), 2 + Math.log10(pl.minutes/100)) : 0)) * 1000 * (5 - Math.log(2040 - +(getLast(pl.seasons).split('-')[0]))) * Math.log10(1 + pl.minutes/pl.seasons.length) * Math.log10(10 + pl.seasons.length))
                         }))
                         .sort((a,b) => b.score - a.score);
 
