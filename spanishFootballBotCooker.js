@@ -7,6 +7,10 @@ const PLAYERS_OUTPUT_FILE = path.join(__dirname, './output/players.json');
 const COOK_OUTPUT_FILE = path.join(__dirname, './spanishFootballBotCook/players.json');
 const COOK_SUMMARY_OUTPUT_FILE = path.join(__dirname, './spanishFootballBotCook/playersSummary.json');
 const COOK_NAMES_LIST_OUTPUT_FILE = path.join(__dirname, './spanishFootballBotCook/playersNamesList.json');
+const COOK_PORTEROS = path.join(__dirname, './spanishFootballBotCook/porteros.json');
+const COOK_DEFENSAS = path.join(__dirname, './spanishFootballBotCook/defensas.json');
+const COOK_CENTROCAMPISTAS = path.join(__dirname, './spanishFootballBotCook/centrocampistas.json');
+const COOK_DELANTEROS = path.join(__dirname, './spanishFootballBotCook/delanteros.json');
 
 console.log("Read scraped players data.")
 
@@ -44,5 +48,9 @@ fs.writeJsonSync(COOK_SUMMARY_OUTPUT_FILE, cookedPlayers.map((pl, i) => ({
     score: pl.score
 })), {spaces: 2});
 fs.writeJsonSync(COOK_NAMES_LIST_OUTPUT_FILE, cookedPlayers.map((pl, i) => pl.alias), {spaces: 2});
+fs.writeJsonSync(COOK_PORTEROS, cookedPlayers.filter(pl => pl.position === 'portero').map((pl, i) => pl.alias).filter((p,i) => i < 128), {spaces: 2});
+fs.writeJsonSync(COOK_DEFENSAS, cookedPlayers.filter(pl => pl.position === 'defensa').map((pl, i) => pl.alias).filter((p,i) => i < 512), {spaces: 2});
+fs.writeJsonSync(COOK_CENTROCAMPISTAS, cookedPlayers.filter(pl => pl.position === 'centrocampista').map((pl, i) => pl.alias).filter((p,i) => i < 512), {spaces: 2});
+fs.writeJsonSync(COOK_DELANTEROS, cookedPlayers.filter(pl => pl.position === 'delantero').map((pl, i) => pl.alias).filter((p,i) => i < 256), {spaces: 2});
 
 console.log('DONE!!!');
