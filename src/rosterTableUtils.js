@@ -30,6 +30,7 @@ const getGamesCompleted = tds => +(tds[PLAYER_GAMES_COMPLETED].childNodes[0].tex
 const getYellowCards = tds => getLastColsSelAndFormat(tds, PLAYER_YELLOW_CARDS_REVERSE);
 const getRedCards = tds => getLastColsSelAndFormat(tds, PLAYER_RED_CARDS_REVERSE);
 const getGoals = tds => getLastColsSelAndFormat(tds, PLAYER_GOALS_REVERSE);
+const getConcededGoals = tds => restrictBottomToZero(-(getFromReverseIndex(tds, PLAYER_GOALS_REVERSE).childNodes[0].textContent));
 
 const getPlayerDataFromRow = r => {
     const tds = [...(r.querySelectorAll('td'))];
@@ -44,7 +45,8 @@ const getPlayerDataFromRow = r => {
         gamesCompleted: getGamesCompleted(tds),
         yellowCards: getYellowCards(tds),
         redCards: getRedCards(tds),
-        goals: getGoals(tds)
+        goals: getGoals(tds),
+        concededGoals: getConcededGoals(tds)
     }
 }
 
