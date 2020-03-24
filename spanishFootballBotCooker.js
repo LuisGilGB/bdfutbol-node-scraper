@@ -14,10 +14,10 @@ const players = fs.readJsonSync(PLAYERS_OUTPUT_FILE);
 console.log("Players data succesfully read");
 
 const POSITION_GOALS_WEIGHT = {
-    portero: 50,
-    defensa: 10,
-    centrocampista: 5,
-    delantero: 2
+    portero: 10,
+    defensa: 3,
+    centrocampista: 2,
+    delantero: 1
 }
 
 const getGoalsWeight = position => POSITION_GOALS_WEIGHT[position] || 1;
@@ -31,16 +31,16 @@ const cookedPlayers = players
                         .filter(pl => pl.gamesPlayed > 0)
                         .map(pl => ({
                             ...pl,
-                            score: Math.round((Math.round(pl.gamesPlayed/5) + Math.round(Math.pow(pl.goals * getGoalsWeight(pl.position)/2, 1.5)) + Math.pow(1 + (2 * pl.goals/pl.gamesPlayed), Math.round(1 + Math.log10(pl.gamesPlayed)))) * 1000 * (4.53 - Math.log(2020 - +(getLast(pl.seasons).split('-')[0]))))
+                            score: Math.round(((pl.gamesPlayed/20) + Math.pow(pl.goals * getGoalsWeight(pl.position)/2, 1.5) + Math.pow(1 + (2 * pl.goals/pl.gamesPlayed), Math.round(1 + Math.log10(pl.gamesPlayed)))) * 1000 * (5 - Math.log(2040 - +(getLast(pl.seasons).split('-')[0]))))
                         }))
                         .sort((a,b) => b.score - a.score);
 
 fs.writeJsonSync(COOK_OUTPUT_FILE, cookedPlayers, {spaces: 2});
 fs.writeJsonSync(COOK_SUMMARY_OUTPUT_FILE, cookedPlayers.map((pl, i) => ({
     alis: pl.alias,
-    score: pl.score,
+    lastSeason: +(getLast(pl.seasons).split('-')[0]),
     pos: i+1,
-    lastSeason: +(getLast(pl.seasons).split('-')[0])
+    score: pl.score
 })), {spaces: 2});
 
 console.log('DONE!!!')

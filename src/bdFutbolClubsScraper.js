@@ -77,6 +77,7 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
                     const oldPlayerData = currentPlayersData[matchIndex];
                     const updatedPlayerData = {
                         ...oldPlayerData,
+                        position: pl.position,
                         gamesPlayed: oldPlayerData.gamesPlayed + pl.gamesPlayed,
                         gameStartings: oldPlayerData.gameStartings + pl.gameStartings,
                         gamesCompleted: oldPlayerData.gamesCompleted + pl.gamesCompleted,
