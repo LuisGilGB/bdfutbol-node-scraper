@@ -46,10 +46,11 @@ const LEGEND_TABLE = {
     j8389: 1,       // Gaínza
     j8230: 1,       // Ramallets
     j9633: 1,       // Basora
-    j9575: 1,       // Kopa
     j7442: 1,       // Miguel Muñoz
+    j8231: 1,       // Luis Suárez
     j6063: 1,       // Gento
     j7510: 1,       // Rial
+    j9575: 1,       // Kopa
     j7863: 1,       // Santamaría
     j7862: 1,       // Puskás
     j9499: 1,       // Didí
@@ -106,6 +107,9 @@ const goalsBase = pl => Math.pow(pl.goals * getGoalsWeight(pl.position), 1.5);
 const goalsRateBase = pl => Math.pow(1 + (600 * (pl.goals * Math.sqrt(getGoalsWeight(pl.position)))/pl.minutes), 2 + Math.log10(pl.minutes/80));
 const goalsConcededBase = pl => Math.pow(1 + Math.log((2500 - getLastSeasonStartingYear(pl))/5) * Math.pow(2, 1-(90 * pl.concededGoals)/pl.minutes), 2 + Math.log10(1 + pl.minutes/90)) * Math.log10(1 + pl.minutes/100)/3;
 const goalsRelatedBase = pl => pl.position === PORTERO ? goalsConcededBase(pl) : 0.75 * (goalsBase(pl) + goalsRateBase(pl));
+const yellowCardsBase = pl => Math.pow(pl.yellowCards/5, 2);
+const redCardsBase = pl => Math.pow(pl.redCards, 2);
+
 const recentPlayerFactor = pl => (7.82 - Math.log(9000 - 4*2019)) * (Math.pow(2, Math.pow(1/Math.log10(2029 - getLastSeasonStartingYear(pl)), 4)) - 1);
 const memoryFactor = pl => LEGEND_TABLE[pl.bdFutbolId] || recentPlayerFactor(pl);
 const minutesPerSeasonFactor = pl => Math.pow(1 + pl.minutes/(3000 * pl.seasons.length), 1.3);
@@ -114,7 +118,9 @@ const careerLengthFactor = pl => Math.pow(1.25, 1 + pl.seasons.length/25);
 const calculateScore = (pl) => Math.round(
     BASE_FACTOR * (
         minutesPlayedBase(pl) + 
-        goalsRelatedBase(pl)
+        goalsRelatedBase(pl) +
+        yellowCardsBase(pl) +
+        redCardsBase(pl)
     ) * memoryFactor(pl));
 
 const cook = () => {
