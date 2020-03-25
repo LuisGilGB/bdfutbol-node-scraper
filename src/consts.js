@@ -6,20 +6,25 @@ const SEASON_PREFIX = 't';
 const SEASON_CLASSIFICATION_TABLE_ID = 'classific';
 const ROSTER_TABLE_ID = 'taulaplantilla';
 
+const PORTERO = 'portero';
+const DEFENSA = 'defensa';
+const CENTROCAMPISTA = 'centrocampista';
+const DELANTERO = 'delantero';
+
 const FIRST_STARTING_YEAR = 1928;
 const LAST_STARTING_YEAR = 2019;
 
 const INVALID_STARTING_YEARS = [1936, 1937, 1938];
 
 const POS_MAP = {
-    por: 'portero',
-    def: 'defensa',
-    ltd: 'defensa',
-    lti: 'defensa',
-    cen: 'defensa',
-    mig: 'centrocampista',
-    dav: 'delantero',
-    dac: 'delantero'
+    por: PORTERO,
+    def: DEFENSA,
+    ltd: DEFENSA,
+    lti: DEFENSA,
+    cen: DEFENSA,
+    mig: CENTROCAMPISTA,
+    dav: DELANTERO,
+    dac: DELANTERO
 }
 
 const MIN_GAMES = 3;
@@ -39,6 +44,7 @@ const ROSTER_COLUMNS = {
     PLAYER_GAMES_PLAYED: 6,
     PLAYER_GAME_STARTINGS: 7,
     PLAYER_GAMES_COMPLETED: 8,
+    PLAYER_MINUTES_REVERSE: 3,
     PLAYER_YELLOW_CARDS_REVERSE: 2,
     PLAYER_RED_CARDS_REVERSE: 1,
     PLAYER_GOALS_REVERSE: 0
@@ -51,6 +57,10 @@ module.exports = {
     SEASON_PREFIX,
     SEASON_CLASSIFICATION_TABLE_ID,
     ROSTER_TABLE_ID,
+    PORTERO,
+    DEFENSA,
+    CENTROCAMPISTA,
+    DELANTERO,
     FIRST_STARTING_YEAR,
     LAST_STARTING_YEAR,
     INVALID_STARTING_YEARS,

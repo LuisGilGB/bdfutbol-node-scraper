@@ -36,7 +36,7 @@ const getDorsal = r => returnEmptyIfInvalid(r.childNodes[PLAYER_DORSAL_COL].text
 const getGames = r => r.childNodes[PLAYER_GAMES_PLAYED].childNodes[0].textContent;
 
 const CLUBS_OUTPUT_FILE = path.join(__dirname, '../output/clubs.json');
-const PLAYERS_OUTPUT_FILE = path.join(__dirname, '../output/players.json')
+const PLAYERS_OUTPUT_FILE = path.join(__dirname, '../output/players.json');
 
 const filterIrrelevantPlayers = r => !((r.querySelector('.filial') || !getDorsal(r)) && +(getGames(r)) < MIN_GAMES);
 
@@ -77,12 +77,15 @@ const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) =
                     const oldPlayerData = currentPlayersData[matchIndex];
                     const updatedPlayerData = {
                         ...oldPlayerData,
+                        position: pl.position,
                         gamesPlayed: oldPlayerData.gamesPlayed + pl.gamesPlayed,
                         gameStartings: oldPlayerData.gameStartings + pl.gameStartings,
                         gamesCompleted: oldPlayerData.gamesCompleted + pl.gamesCompleted,
+                        minutes: oldPlayerData.minutes + pl.minutes,
                         yellowCards: oldPlayerData.yellowCards + pl.yellowCards,
                         redCards: oldPlayerData.redCards + pl.redCards,
                         goals: oldPlayerData.goals + pl.goals,
+                        concededGoals: oldPlayerData.concededGoals + pl.concededGoals,
                         seasons: [...oldPlayerData.seasons, seasonCode].filter((s,i,a) => a.indexOf(s) === i)
                     }
                     currentPlayersData[matchIndex] = updatedPlayerData;

@@ -42,6 +42,9 @@ htmlSaves/
 # Output directoty
 output/
 
+# Spanish Football Bot cook directory
+spanishFootballBotCook/
+
 # TypeScript v1 declaration files
 typings/
 
