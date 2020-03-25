@@ -30,30 +30,30 @@ const {
 
 const POSITION_GOALS_WEIGHT = {
     portero: 10,
-    defensa: 3,
-    centrocampista: 2,
+    defensa: 5,
+    centrocampista: 3,
     delantero: 1
 }
 
-const getGoalsWeight = position => POSITION_GOALS_WEIGHT[position] || 1;
-const getPlayerLastStartingYear = pl => +(getLast(pl.seasons).split('-')[0]);
+const getGoalsWeight = position => Math.sqrt(POSITION_GOALS_WEIGHT[position] || 1);
+const getLastSeasonStartingYear = pl => +(getLast(pl.seasons).split('-')[0]);
 
 const BASE_FACTOR = 1000;
 
-const minutesPlayedBase = pl => Math.pow(pl.minutes/300, 1.5);
-const goalsBase = pl => Math.pow(pl.goals * getGoalsWeight(pl.position)/2, 1.5);
-const goalsRateBase = pl => Math.pow(1 + (600 * (pl.goals * Math.sqrt(getGoalsWeight(pl.position)))/pl.minutes), 2 + Math.log10(pl.minutes/60));
-const goalsConcededBase = pl => Math.pow(1 + Math.log((2500 - +(getLast(pl.seasons).split('-')[0]))/5) * pl.minutes/(100 * pl.concededGoals), 2 + Math.log10(pl.minutes/100));
-const goalsRelatedBase = pl => pl.position === PORTERO ? goalsConcededBase(pl) : (goalsBase(pl) + goalsRateBase(pl));
-const recentPlayerFactor = pl => 5 - Math.log(2040 - getPlayerLastStartingYear(pl));
+const minutesPlayedBase = pl => 120 * Math.log(1 + pl.minutes/400) + Math.pow(pl.minutes/80, 1.25);
+const goalsBase = pl => Math.pow(pl.goals * getGoalsWeight(pl.position), 1.5);
+const goalsRateBase = pl => Math.pow(1 + (500 * (pl.goals * Math.sqrt(getGoalsWeight(pl.position)))/pl.minutes), 2 + Math.log10(pl.minutes/80));
+const goalsConcededBase = pl => Math.pow(1 + Math.log((2500 - getLastSeasonStartingYear(pl))/5) * Math.pow(2, 1-(90 * pl.concededGoals)/pl.minutes), 2 + Math.log10(1 + pl.minutes/90)) * Math.log10(1 + pl.minutes/100)/3;
+const goalsRelatedBase = pl => pl.position === PORTERO ? goalsConcededBase(pl) : 0.75 * (goalsBase(pl) + goalsRateBase(pl));
+const recentPlayerFactor = pl => 7.2 - Math.log(9000 - 4*getLastSeasonStartingYear(pl));
 const minutesPerSeasonFactor = pl => Math.pow(1 + pl.minutes/(3000 * pl.seasons.length), 1.3);
-const careerLengthFactor = pl => Math.pow(1 + pl.seasons.length/25, 2);
+const careerLengthFactor = pl => Math.pow(1.25, 1 + pl.seasons.length/25);
 
 const calculateScore = (pl) => Math.round(
     BASE_FACTOR * (
         minutesPlayedBase(pl) + 
         goalsRelatedBase(pl)
-    ) * recentPlayerFactor(pl) * careerLengthFactor(pl));
+    ) * recentPlayerFactor(pl));
 
 const cook = () => {
     console.log("Read scraped players data.")
@@ -70,7 +70,6 @@ const cook = () => {
     fs.ensureDirSync(COOK_DEFENSAS_DIR);
     fs.ensureDirSync(COOK_CENTROCAMPISTAS_DIR);
     fs.ensureDirSync(COOK_DELANTEROS_DIR);
-
 
     const cookedPlayers = players
                             .filter(pl => pl.gamesPlayed > 0)
