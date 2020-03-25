@@ -28,6 +28,46 @@ const {
     COOK_DELANTEROS_QUICK_VIEW_FILE
 } = require('./fileLocations');
 
+const LEGEND_TABLE = {
+    j1753: 3,       // Messi
+    j12429: 3,      // Cristiano
+    j8405: 2,       // Ricardo Zamora
+    j7444: 2,       // Kubala
+    j7349: 2,       // Di Stéfano
+    j5282: 2,       // Cruyff
+    j591: 2,        // Maradona
+    j2400: 2,       // Ronaldo
+    j2664: 2,       // Zidane
+    j9323: 1,       // Jacinto Quincoces
+    j11367: 1,      // Ciriaco
+    j10566: 1,      // Lángara
+    j11373: 1,      // Luis Regueiro
+    j10762: 1,      // Gorostiza
+    j11301: 1,      // Bata
+    j8391: 1,       // Mundo
+    j9913: 1,       // Zarra
+    j8389: 1,       // Gaínza
+    j7469: 1,       // Juanito Arza
+    j8230: 1,       // Ramallets
+    j9633: 1,       // Basora
+    j8230: 1,       // Ramallets
+    j9575: 1,       // Kopa
+    j6063: 1,       // Gento
+    j7510: 1,       // Rial
+    j9499: 1,       // Didí
+    j7863: 1,       // Santamaría
+    j7862: 1,       // Puskás
+    j7442: 1,       // Miguel Muñoz
+    j5459: 1,       // Amancio
+    j2883: 1,       // Juanito
+    j937: 1,        // Hagi
+    j2394: 1,       // Romário
+    j2614: 1,       // Rivaldo
+    j608: 1,        // Djalminha
+    j2399: 1,       // Ronaldinho
+    j15201: 1       // Neymar
+}
+
 const POSITION_GOALS_WEIGHT = {
     portero: 10,
     defensa: 5,
@@ -46,6 +86,7 @@ const goalsRateBase = pl => Math.pow(1 + (500 * (pl.goals * Math.sqrt(getGoalsWe
 const goalsConcededBase = pl => Math.pow(1 + Math.log((2500 - getLastSeasonStartingYear(pl))/5) * Math.pow(2, 1-(90 * pl.concededGoals)/pl.minutes), 2 + Math.log10(1 + pl.minutes/90)) * Math.log10(1 + pl.minutes/100)/3;
 const goalsRelatedBase = pl => pl.position === PORTERO ? goalsConcededBase(pl) : 0.75 * (goalsBase(pl) + goalsRateBase(pl));
 const recentPlayerFactor = pl => 7.2 - Math.log(9000 - 4*getLastSeasonStartingYear(pl));
+const getMemoryFactor = pl => LEGEND_TABLE[pl.bdFutbolId] || recentPlayerFactor(pl);
 const minutesPerSeasonFactor = pl => Math.pow(1 + pl.minutes/(3000 * pl.seasons.length), 1.3);
 const careerLengthFactor = pl => Math.pow(1.25, 1 + pl.seasons.length/25);
 
@@ -53,7 +94,7 @@ const calculateScore = (pl) => Math.round(
     BASE_FACTOR * (
         minutesPlayedBase(pl) + 
         goalsRelatedBase(pl)
-    ) * recentPlayerFactor(pl));
+    ) * getMemoryFactor(pl));
 
 const cook = () => {
     console.log("Read scraped players data.")
