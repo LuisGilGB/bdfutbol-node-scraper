@@ -7,16 +7,28 @@ const PLAYERS_OUTPUT_FILE = path.join(__dirname, './output/players.json');
 const COOK_OUTPUT_FILE = path.join(__dirname, './spanishFootballBotCook/players.json');
 const COOK_SUMMARY_OUTPUT_FILE = path.join(__dirname, './spanishFootballBotCook/playersSummary.json');
 const COOK_NAMES_LIST_OUTPUT_FILE = path.join(__dirname, './spanishFootballBotCook/playersNamesList.json');
-const COOK_PORTEROS = path.join(__dirname, './spanishFootballBotCook/porteros.json');
-const COOK_DEFENSAS = path.join(__dirname, './spanishFootballBotCook/defensas.json');
-const COOK_CENTROCAMPISTAS = path.join(__dirname, './spanishFootballBotCook/centrocampistas.json');
-const COOK_DELANTEROS = path.join(__dirname, './spanishFootballBotCook/delanteros.json');
+
+const COOK_PORTEROS_DIR = path.join(__dirname, './spanishFootballBotCook/porteros');
+const COOK_PORTEROS_FILE = path.join(COOK_PORTEROS_DIR, './porteros.json');
+const COOK_PORTEROS_QUICK_VIEW_FILE = path.join(COOK_PORTEROS_DIR, './porterosQuickView.json');
+
+const COOK_DEFENSAS_DIR = path.join(__dirname, './spanishFootballBotCook/defensas');
+const COOK_DEFENSAS_FILE = path.join(COOK_DEFENSAS_DIR, './defensas.json');
+const COOK_DEFENSAS_QUICK_VIEW_FILE = path.join(COOK_DEFENSAS_DIR, './defensasQuickView.json');
+
+const COOK_CENTROCAMPISTAS_DIR = path.join(__dirname, './spanishFootballBotCook/centrocampistas');
+const COOK_CENTROCAMPISTAS_FILE = path.join(COOK_CENTROCAMPISTAS_DIR, './centrocampistas.json');
+const COOK_CENTROCAMPISTAS_QUICK_VIEW_FILE = path.join(COOK_CENTROCAMPISTAS_DIR, './centrocampistasQuickView.json');
+
+const COOK_DELANTEROS_DIR = path.join(__dirname, './spanishFootballBotCook/delanteros');
+const COOK_DELANTEROS_FILE = path.join(COOK_DELANTEROS_DIR, './delanteros.json');
+const COOK_DELANTEROS_QUICK_VIEW_FILE = path.join(COOK_DELANTEROS_DIR, './delanterosQuickView.json');
 
 console.log("Read scraped players data.")
 
 const players = fs.readJsonSync(PLAYERS_OUTPUT_FILE);
 
-console.log("Players data succesfully read");
+console.log("Players data successfully read");
 
 const POSITION_GOALS_WEIGHT = {
     portero: 10,
@@ -31,6 +43,11 @@ console.log("Let's cook!");
 
 fs.rmdirSync(path.join(__dirname, './spanishFootballBotCook'), {recursive: true});
 fs.ensureDirSync(path.join(__dirname, './spanishFootballBotCook'));
+fs.ensureDirSync(COOK_PORTEROS_DIR);
+fs.ensureDirSync(COOK_DEFENSAS_DIR);
+fs.ensureDirSync(COOK_CENTROCAMPISTAS_DIR);
+fs.ensureDirSync(COOK_DELANTEROS_DIR);
+
 
 const cookedPlayers = players
                         .filter(pl => pl.gamesPlayed > 0)
@@ -48,9 +65,15 @@ fs.writeJsonSync(COOK_SUMMARY_OUTPUT_FILE, cookedPlayers.map((pl, i) => ({
     score: pl.score
 })), {spaces: 2});
 fs.writeJsonSync(COOK_NAMES_LIST_OUTPUT_FILE, cookedPlayers.map((pl, i) => pl.alias), {spaces: 2});
-fs.writeJsonSync(COOK_PORTEROS, cookedPlayers.filter(pl => pl.position === 'portero').map((pl, i) => pl.alias).filter((p,i) => i < 128), {spaces: 2});
-fs.writeJsonSync(COOK_DEFENSAS, cookedPlayers.filter(pl => pl.position === 'defensa').map((pl, i) => pl.alias).filter((p,i) => i < 512), {spaces: 2});
-fs.writeJsonSync(COOK_CENTROCAMPISTAS, cookedPlayers.filter(pl => pl.position === 'centrocampista').map((pl, i) => pl.alias).filter((p,i) => i < 512), {spaces: 2});
-fs.writeJsonSync(COOK_DELANTEROS, cookedPlayers.filter(pl => pl.position === 'delantero').map((pl, i) => pl.alias).filter((p,i) => i < 256), {spaces: 2});
+
+const porteros = cookedPlayers.filter(pl => pl.position === 'portero').filter((p,i) => i < 128);
+const defensas = cookedPlayers.filter(pl => pl.position === 'defensa').filter((p,i) => i < 512);
+const centrocampistas = cookedPlayers.filter(pl => pl.position === 'centrocampista').filter((p,i) => i < 512);
+const delanteros = cookedPlayers.filter(pl => pl.position === 'delantero').filter((p,i) => i < 128);
+
+fs.writeJsonSync(COOK_PORTEROS_FILE, porteros, {spaces: 2});
+fs.writeJsonSync(COOK_DEFENSAS_FILE, defensas, {spaces: 2});
+fs.writeJsonSync(COOK_CENTROCAMPISTAS_FILE, centrocampistas, {spaces: 2});
+fs.writeJsonSync(COOK_DELANTEROS_FILE, delanteros, {spaces: 2});
 
 console.log('DONE!!!');
