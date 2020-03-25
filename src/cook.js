@@ -60,10 +60,19 @@ const LEGEND_TABLE = {
     j7442: 1,       // Miguel Muñoz
     j5459: 1,       // Amancio
     j2883: 1,       // Juanito
+    j1345: 1,       // Mágico González
+    j2197: 1,       // Futre
     j937: 1,        // Hagi
+    j2636: 1,       // Wilfred
+    j2102: 1,       // Salenko
     j2394: 1,       // Romário
+    j687: 1,        // Quique Martín
+    j1376: 1,       // Sinval
+    j2226: 1,       // Pedro José
     j2614: 1,       // Rivaldo
+    j390: 1,        // Mono Montoya
     j608: 1,        // Djalminha
+    j956: 1,        // Mono Burgos
     j2399: 1,       // Ronaldinho
     j15201: 1       // Neymar
 }
@@ -75,6 +84,8 @@ const POSITION_GOALS_WEIGHT = {
     delantero: 1
 }
 
+const mapToAlias = pl => pl.alias;
+
 const getGoalsWeight = position => Math.sqrt(POSITION_GOALS_WEIGHT[position] || 1);
 const getLastSeasonStartingYear = pl => +(getLast(pl.seasons).split('-')[0]);
 
@@ -85,7 +96,7 @@ const goalsBase = pl => Math.pow(pl.goals * getGoalsWeight(pl.position), 1.5);
 const goalsRateBase = pl => Math.pow(1 + (500 * (pl.goals * Math.sqrt(getGoalsWeight(pl.position)))/pl.minutes), 2 + Math.log10(pl.minutes/80));
 const goalsConcededBase = pl => Math.pow(1 + Math.log((2500 - getLastSeasonStartingYear(pl))/5) * Math.pow(2, 1-(90 * pl.concededGoals)/pl.minutes), 2 + Math.log10(1 + pl.minutes/90)) * Math.log10(1 + pl.minutes/100)/3;
 const goalsRelatedBase = pl => pl.position === PORTERO ? goalsConcededBase(pl) : 0.75 * (goalsBase(pl) + goalsRateBase(pl));
-const recentPlayerFactor = pl => 7.2 - Math.log(9000 - 4*getLastSeasonStartingYear(pl));
+const recentPlayerFactor = pl => 7.82 - Math.log(9000 - 4*getLastSeasonStartingYear(pl));
 const getMemoryFactor = pl => LEGEND_TABLE[pl.bdFutbolId] || recentPlayerFactor(pl);
 const minutesPerSeasonFactor = pl => Math.pow(1 + pl.minutes/(3000 * pl.seasons.length), 1.3);
 const careerLengthFactor = pl => Math.pow(1.25, 1 + pl.seasons.length/25);
@@ -132,12 +143,17 @@ const cook = () => {
     const porteros = cookedPlayers.filter(pl => pl.position === PORTERO).filter((p,i) => i < 128);
     const defensas = cookedPlayers.filter(pl => pl.position === DEFENSA).filter((p,i) => i < 512);
     const centrocampistas = cookedPlayers.filter(pl => pl.position === CENTROCAMPISTA).filter((p,i) => i < 512);
-    const delanteros = cookedPlayers.filter(pl => pl.position === DELANTERO).filter((p,i) => i < 128);
+    const delanteros = cookedPlayers.filter(pl => pl.position === DELANTERO).filter((p,i) => i < 256);
 
     fs.writeJsonSync(COOK_PORTEROS_FILE, porteros, {spaces: 2});
     fs.writeJsonSync(COOK_DEFENSAS_FILE, defensas, {spaces: 2});
     fs.writeJsonSync(COOK_CENTROCAMPISTAS_FILE, centrocampistas, {spaces: 2});
     fs.writeJsonSync(COOK_DELANTEROS_FILE, delanteros, {spaces: 2});
+
+    fs.writeJsonSync(COOK_PORTEROS_QUICK_VIEW_FILE, porteros.map(mapToAlias), {spaces: 2});
+    fs.writeJsonSync(COOK_DEFENSAS_QUICK_VIEW_FILE, defensas.map(mapToAlias), {spaces: 2});
+    fs.writeJsonSync(COOK_CENTROCAMPISTAS_QUICK_VIEW_FILE, centrocampistas.map(mapToAlias), {spaces: 2});
+    fs.writeJsonSync(COOK_DELANTEROS_QUICK_VIEW_FILE, delanteros.map(mapToAlias), {spaces: 2});
 
     console.log('DONE!!!');
 }
