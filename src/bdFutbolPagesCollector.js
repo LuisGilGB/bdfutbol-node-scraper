@@ -18,7 +18,7 @@ const {
 const {
     isClubRow,
     getClubDataFromRow
-} = require('./seasonTableUtils');
+} = require('./seasonTableScraping/seasonTableUtils');
 
 const collectPage = (url, destPath, selector) => new Promise((resolve, reject) => {
     rp(url)
