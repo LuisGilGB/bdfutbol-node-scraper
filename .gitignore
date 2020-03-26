@@ -42,6 +42,9 @@ htmlSaves/
 # Output directoty
 output/
 
+# Custom output directoty
+customOutput/
+
 # Spanish Football Bot cook directory
 spanishFootballBotCook/
 
