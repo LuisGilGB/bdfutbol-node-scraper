@@ -95,6 +95,13 @@ const POSITION_GOALS_WEIGHT = {
     delantero: 1
 }
 
+const mapToBotFormat = pl => ({
+    id: pl.bdFutbolId,
+    alias: pl.alias,
+    nombreCompleto: pl.completeName,
+    bdFutbolLink: pl.bdFutbolLink,
+    picUrl: pl.picUrl
+});
 const mapToAlias = pl => pl.alias;
 
 const getGoalsWeight = position => Math.sqrt(POSITION_GOALS_WEIGHT[position] || 1);
@@ -156,10 +163,10 @@ const cook = () => {
     })), {spaces: 2});
     fs.writeJsonSync(COOK_NAMES_LIST_OUTPUT_FILE, cookedPlayers.map((pl, i) => pl.alias), {spaces: 2});
 
-    const porteros = cookedPlayers.filter(pl => pl.position === PORTERO).filter((p,i) => i < 128);
-    const defensas = cookedPlayers.filter(pl => pl.position === DEFENSA).filter((p,i) => i < 512);
-    const centrocampistas = cookedPlayers.filter(pl => pl.position === CENTROCAMPISTA).filter((p,i) => i < 512);
-    const delanteros = cookedPlayers.filter(pl => pl.position === DELANTERO).filter((p,i) => i < 256);
+    const porteros = cookedPlayers.filter(pl => pl.position === PORTERO).filter((p,i) => i < 128).map(mapToBotFormat);
+    const defensas = cookedPlayers.filter(pl => pl.position === DEFENSA).filter((p,i) => i < 512).map(mapToBotFormat);
+    const centrocampistas = cookedPlayers.filter(pl => pl.position === CENTROCAMPISTA).filter((p,i) => i < 512).map(mapToBotFormat);
+    const delanteros = cookedPlayers.filter(pl => pl.position === DELANTERO).filter((p,i) => i < 256).map(mapToBotFormat);
 
     fs.writeJsonSync(COOK_PORTEROS_FILE, porteros, {spaces: 2});
     fs.writeJsonSync(COOK_DEFENSAS_FILE, defensas, {spaces: 2});

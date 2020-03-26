@@ -3,6 +3,7 @@ const rp = require('request-promise');
 const path = require('path');
 const chalk = require('chalk');
 const rosterScraper = require('./bdFutbolRosterScraper.js');
+const seasonClubsScraper = require('./seasonTableScraping/seasonTableScraper');
 const {
     LAST_STARTING_YEAR,
     MIN_GAMES,
@@ -22,7 +23,7 @@ const {
     isClubRow,
     getClubDataFromRow,
     filterClubDataToSave
-} = require('./seasonTableUtils');
+} = require('./seasonTableScraping/seasonTableUtils');
 
 const {
     PLAYER_DORSAL_COL,
@@ -40,12 +41,8 @@ const PLAYERS_OUTPUT_FILE = path.join(__dirname, '../output/players.json');
 
 const filterIrrelevantPlayers = r => !((r.querySelector('.filial') || !getDorsal(r)) && +(getGames(r)) < MIN_GAMES);
 
-const seasonClubsScraper = seasonCode => page => new Promise((resolve, reject) => {
-    const pageDom = getDom(page);
-    const rawRows = pageDom.querySelectorAll('#classific tr');
-    const rows = [...rawRows];
-
-    const clubs = rows.filter(isClubRow).map(getClubDataFromRow);
+const seasonClubsAndPlayersScraper = seasonCode => page => new Promise((resolve, reject) => {
+    const clubs = seasonClubsScraper(page);
     console.log(`We have all the club HTML row elements (${clubs.length}).`);
 
     const clubsPromises = clubs.map(c => {
@@ -128,7 +125,7 @@ const scrapeSeason = (inputYear = LAST_STARTING_YEAR) => new Promise((resolve, r
     const year = constrainYear(inputYear);
     const seasonCode = getSeasonCode(year);
     const localPath = getSeasonLocalPathFromCode(seasonCode);
-    const bdFutbolClubsScraper = seasonClubsScraper(seasonCode);
+    const bdFutbolClubsScraper = seasonClubsAndPlayersScraper(seasonCode);
 
     const postSeasonScrapeRoutine = scrapedClubsData => {
         console.log('The classification page was successfully scraped.');

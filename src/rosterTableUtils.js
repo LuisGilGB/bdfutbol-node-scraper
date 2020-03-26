@@ -22,6 +22,7 @@ const getLastColsSelAndFormat = (tds, reverseIndex) => restrictBottomToZero(getF
 const getAlias = tds => tds[PLAYER_NAME_COL].childNodes[0].childNodes[0].childNodes[0].textContent;
 const getCompleteName = tds => tds[PLAYER_NAME_COL].childNodes[0].childNodes[0].childNodes[1].textContent;
 const getBdFutbolId = tds => getIdFromHref(tds[PLAYER_NAME_COL].childNodes[0].childNodes[0].href);
+const getBdFutbolLink = id => `https://www.bdfutbol.com/es/j/${id}.html`;
 const getUrlFromImageIfExists = img => img ? img.src.replace('/m/', '/j/').replace('../../', BASE_URL).replace('.png', '.jpg') : '';
 const getPicUrl = r => getUrlFromImageIfExists(getImage(r));
 const getPosition = r => POS_MAP[Object.keys(POS_MAP).find(k => r.querySelector(`.${k}`))];
@@ -36,12 +37,15 @@ const getConcededGoals = tds => restrictBottomToZero(-(getFromReverseIndex(tds, 
 
 const getPlayerDataFromRow = r => {
     const tds = [...(r.querySelectorAll('td'))];
+    const id = getBdFutbolId(tds);
     return {
+        id,
+        bdFutbolId: id,
         position: getPosition(r),
         alias: getAlias(tds),
         completeName: getCompleteName(tds),
-        bdFutbolId: getBdFutbolId(tds),
         picUrl: getPicUrl(r),
+        bdFutbolLink: getBdFutbolLink(id),
         gamesPlayed: getGamesPlayed(tds),
         gameStartings: getGameStartings(tds),
         gamesCompleted: getGamesCompleted(tds),
